@@ -54,7 +54,6 @@ class SourceWidget(Window):
         self.bindings = KeyBindings()
         super().__init__(
             content=BufferControl(
-                buffer=self._create_source_code_buffer(),
                 lexer=PygmentsLexer(PythonLexer),
                 key_bindings=self.bindings,
             ),
@@ -64,10 +63,15 @@ class SourceWidget(Window):
             cursorline=True,
         )
 
-    def _create_source_code_buffer(self):
-        return Buffer(
+    @property
+    def source_file(self):
+        return self.content.buffer
+
+    @source_file.setter
+    def source_file(self, file):
+        self.content.buffer = Buffer(
             document=Document(
-                open("vidb/ui.py").read(),
+                file.read(),
             ),
             read_only=True,
         )
@@ -136,6 +140,8 @@ class UI:
             full_screen=True,
             mouse_support=True,
         )
+
+        self.source_widget.source_file = open("vidb/ui.py")
 
     def run(self):
         self._ptk.run()
