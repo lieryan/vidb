@@ -8,7 +8,9 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-prompt-toolkit = "^3.0.31"
+prompt-toolkit = ">=2.0.0,<2.1.0"
+ptterm = "^0.2"
+ipython = "<8.2.0"
 
 
 [build-system]
