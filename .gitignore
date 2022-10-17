@@ -1,0 +1,4 @@
+.ropeproject/
+dist/
+tags
+__pycache__
