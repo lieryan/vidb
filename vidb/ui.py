@@ -49,14 +49,90 @@ def VSeparator():
     )
 
 
+class SourceWidget(Window):
+    def __init__(self):
+        self.bindings = KeyBindings()
+        super().__init__(
+            content=BufferControl(
+                buffer=self._create_source_code_buffer(),
+                lexer=PygmentsLexer(PythonLexer),
+                key_bindings=self.bindings,
+            ),
+            left_margins=[
+                NumberedMargin(),
+            ],
+            cursorline=True,
+        )
+
+    def _create_source_code_buffer(self):
+        return Buffer(
+            document=Document(
+                open("vidb/ui.py").read(),
+            ),
+            read_only=True,
+        )
+
+
+class TerminalWidget(Terminal):
+    def __init__(self):
+        self.bindings = KeyBindings()
+        super().__init__(
+            ["ipython"],
+            height=10,
+        )
+
+
+class VariablesWindow(Window):
+    def __init__(self):
+        self.bindings = KeyBindings()
+        super().__init__(
+            content=FormattedTextControl(
+                text="Hello world",
+                focusable=True,
+                key_bindings=self.bindings,
+            ),
+        )
+
+
+class StacktraceWindow(Window):
+    def __init__(self):
+        self.bindings = KeyBindings()
+        super().__init__(
+            content=FormattedTextControl(
+                text="Hello world",
+                focusable=True,
+                key_bindings=self.bindings,
+            ),
+        )
+
+
+class BreakpointWindow(Window):
+    def __init__(self):
+        self.bindings = KeyBindings()
+        super().__init__(
+            content=FormattedTextControl(
+                text="Hello world",
+                focusable=True,
+                key_bindings=self.bindings,
+            ),
+        )
+
+
 class UI:
     _ptk: Application
 
     def __init__(self):
+        self.source_widget = SourceWidget()
+        self.terminal_widget = TerminalWidget()
+        self.variables_widget = VariablesWindow()
+        self.stacktrace_widget = StacktraceWindow()
+        self.breakpoint_widget = BreakpointWindow()
+
+        self.global_bindings = KeyBindings()
         self._create_keybinds()
         self._ptk = Application(
             layout=self._create_layout(),
-            key_bindings=self.kb,
+            key_bindings=self.global_bindings,
             full_screen=True,
             mouse_support=True,
         )
@@ -73,20 +149,15 @@ class UI:
         return Layout(root_container)
 
     def _create_main_container(self):
-        self.source_window = self._create_source_window()
-        self.terminal_window = self._create_terminal_window()
-        self.variables_window = self._create_variables_window()
-        self.stacktrace_window = self._create_stacktrace_window()
-        self.breakpoint_window = self._create_breakpoint_window()
         return VSplit([
             HSplit([
                 # Source code buffer
-                self.source_window,
+                self.source_widget,
 
                 HSeparator(),
 
                 # Shell buffer
-                self.terminal_window,
+                self.terminal_widget,
             ]),
 
             # A vertical line in the middle
@@ -97,111 +168,57 @@ class UI:
                     # Variables
                     TitledWindow(
                         "Variables:",
-                        self.variables_window,
+                        self.variables_widget,
                     ),
 
                     # Stack
                     TitledWindow(
                         "Stack:",
-                        self.stacktrace_window,
+                        self.stacktrace_widget,
                     ),
 
                     # Breakpoint
                     TitledWindow(
                         "Breakpoints:",
-                        self.breakpoint_window,
+                        self.breakpoint_widget,
                     ),
                 ],
                 width=40,
             ),
         ])
 
-    def _create_source_window(self):
-        return Window(
-            content=BufferControl(
-                buffer=self._create_source_code_buffer(),
-                lexer=PygmentsLexer(PythonLexer),
-                key_bindings=self.source_kb,
-            ),
-            left_margins=[
-                NumberedMargin(),
-            ],
-            cursorline=True,
-        )
-
-    def _create_source_code_buffer(self):
-        return Buffer(
-            document=Document(
-                open("vidb/ui.py").read(),
-            ),
-            read_only=True,
-        )
-
-    def _create_terminal_window(self):
-        return Terminal(
-            ["ipython"],
-            height=10,
-        )
-
-    def _create_variables_window(self):
-        return Window(
-            content=FormattedTextControl(
-                text="Hello world",
-                focusable=True,
-                key_bindings=self.variables_kb,
-            ),
-        )
-
-    def _create_stacktrace_window(self):
-        return Window(
-            content=FormattedTextControl(
-                text="Hello world",
-                focusable=True,
-                key_bindings=self.stacktrace_kb,
-            ),
-        )
-
-    def _create_breakpoint_window(self):
-        return Window(
-            content=FormattedTextControl(
-                text="Hello world",
-                focusable=True,
-                key_bindings=self.breakpoint_kb,
-            ),
-        )
-
     def _create_keybinds(self):
-        self.kb = kb = KeyBindings()
-        self.source_kb = source_kb = KeyBindings()
-        self.breakpoint_kb = breakpoint_kb = KeyBindings()
-        self.stacktrace_kb = stacktrace_kb = KeyBindings()
-        self.variables_kb = variables_kb = KeyBindings()
+        kb = self.global_bindings
+        source_kb = self.source_widget.bindings
+        stacktrace_kb = self.stacktrace_widget.bindings
+        variables_kb = self.variables_widget.bindings
+        breakpoint_kb = self.breakpoint_widget.bindings
 
         @kb.add("q")
         def exit_(event):
             event.app.exit()
-            self.terminal_window.process.kill()
+            self.terminal_widget.process.kill()
 
         def focus_source_window(event):
-            event.app.layout.focus(self.source_window)
+            event.app.layout.focus(self.source_widget)
 
         @kb.add("V")
         @source_kb.add("right")
         def focus_variable_window(event):
-            event.app.layout.focus(self.variables_window)
+            event.app.layout.focus(self.variables_widget)
 
         @kb.add("S")
         def focus_stacktrace_window(event):
-            event.app.layout.focus(self.stacktrace_window)
+            event.app.layout.focus(self.stacktrace_widget)
 
         @kb.add("B")
         def focus_breakpoint_window(event):
-            event.app.layout.focus(self.breakpoint_window)
+            event.app.layout.focus(self.breakpoint_widget)
 
         @kb.add("X")
         @kb.add("!")
         def focus_terminal_window(event):
-            event.app.layout.focus(self.terminal_window)
+            event.app.layout.focus(self.terminal_widget)
 
         variables_kb.add("left")(focus_source_window)
         variables_kb.add("down")(focus_stacktrace_window)
