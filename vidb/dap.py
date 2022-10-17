@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from typing import (
     Any,
+    List,
     Literal,
     Optional,
     TypedDict,
@@ -72,3 +73,79 @@ class Message:
     # showUser: Optional[bool]
     # url: Optional[str]
     # urlLabel: Optional[str]
+
+
+class InitializeRequest(_Request):
+    command: Literal["initialize"]
+
+    arguments: InitializeRequestArguments
+
+
+class InitializeRequestArguments(TypedDict):
+    clientID: Optional[str]
+
+    clientName: Optional[str]
+
+    adapterID: Optional[str]
+
+    locale: Optional[str]
+
+    # linesStartAt1: Optional[bool]
+    # columnsStartAt1: Optional[bool]
+    # pathFormat: Optional[Literal["path", "uri"] | str]
+
+    # supportsVariableType: Optional[bool]
+    # supportsVariablePaging: Optional[bool]
+    # supportsRunInTerminalRequest: Optional[bool]
+    # supportsMemoryReferences: Optional[bool]
+    # supportsProgressReporting: Optional[bool]
+    # supportsInvalidatedEvent: Optional[bool]
+    # supportsMemoryEvent: Optional[bool]
+    # supportsArgsCanBeInterpretedByShell: Optional[bool]
+
+
+class InitializeResponse(_Response):
+    body: Capabilities
+
+
+class Capabilities(TypedDict):
+    pass
+    # supportsConfigurationDoneRequest: Optional[bool]
+    # supportsFunctionBreakpoints: Optional[bool]
+    # supportsConditionalBreakpoints: Optional[bool]
+    # supportsHitConditionalBreakpoints: Optional[bool]
+    # supportsEvaluateForHovers: Optional[bool]
+    # exceptionBreakpointFilters: Optional[ExceptionBreakpointsFilter[]]
+    # supportsStepBack: Optional[bool]
+    # supportsSetVariable: Optional[bool]
+    # supportsRestartFrame: Optional[bool]
+    # supportsGotoTargetsRequest: Optional[bool]
+    # supportsStepInTargetsRequest: Optional[bool]
+    # supportsCompletionsRequest: Optional[bool]
+    # completionTriggerCharacters: Optional[List[str]]
+    # supportsModulesRequest: Optional[bool]
+    # additionalModuleColumns: Optional[ColumnDescriptor[]]
+    # supportedChecksumAlgorithms: Optional[ChecksumAlgorithm[]]
+    # supportsRestartRequest: Optional[bool]
+    # supportsExceptionOptions: Optional[bool]
+    # supportsValueFormattingOptions: Optional[bool]
+    # supportsExceptionInfoRequest: Optional[bool]
+    # supportTerminateDebuggee: Optional[bool]
+    # supportSuspendDebuggee: Optional[bool]
+    # supportsDelayedStackTraceLoading: Optional[bool]
+    # supportsLoadedSourcesRequest: Optional[bool]
+    # supportsLogPoints: Optional[bool]
+    # supportsTerminateThreadsRequest: Optional[bool]
+    # supportsSetExpression: Optional[bool]
+    # supportsTerminateRequest: Optional[bool]
+    # supportsDataBreakpoints: Optional[bool]
+    # supportsReadMemoryRequest: Optional[bool]
+    # supportsWriteMemoryRequest: Optional[bool]
+    # supportsDisassembleRequest: Optional[bool]
+    # supportsCancelRequest: Optional[bool]
+    # supportsBreakpointLocationsRequest: Optional[bool]
+    # supportsClipboardContext: Optional[bool]
+    # supportsSteppingGranularity: Optional[bool]
+    # supportsInstructionBreakpoints: Optional[bool]
+    # supportsExceptionFilterOptions: Optional[bool]
+    # supportsSingleThreadExecutionRequests: Optional[bool]
