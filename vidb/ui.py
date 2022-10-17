@@ -166,7 +166,6 @@ class UI:
                 self.terminal_widget,
             ]),
 
-            # A vertical line in the middle
             VSeparator(),
 
             HSplit(
