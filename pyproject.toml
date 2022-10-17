@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "vidb"
+version = "0.1.0"
+description = ""
+authors = ["Lie Ryan <lie.1296@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
