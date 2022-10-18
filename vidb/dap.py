@@ -15,12 +15,12 @@ from typing import (
 
 
 class _ProtocolMessage(TypedDict):
+    """ Base class of requests, responses, and events. """
     seq: int
 
 
-class ProtocolMessage(_ProtocolMessage):
-    """ Base class of requests, responses, and events. """
-    type: Literal["request", "response", "event"] | str
+class _UnvalidatedProtocolMessage(_ProtocolMessage):
+    type: str
 
 
 class _Request(_ProtocolMessage):
@@ -62,6 +62,10 @@ class Response(_Response):
 class ErrorResponse(_Response):
     """ On error (whenever success is false), the body can provide more details. """
     body: Optional[Message]
+
+
+ProtocolMessage = Request | Response | Event
+UnvalidatedProtocolMessage = ProtocolMessage | _UnvalidatedProtocolMessage
 
 
 class Message:
