@@ -44,3 +44,10 @@ class TestInitialize:
 
             writer.close()
             assert await reader.read() == b""
+
+    async def test_read_headers(self):
+        async with self._open_pipe_connection() as (reader, writer):
+            connection = DAPConnection(None, None)
+            writer.write(b"Content-Length: 10\r\n\r\n" + (b"a" * 10))
+            headers = await connection.read_headers(reader)
+            assert headers == {"Content-Length": "10"}
