@@ -45,6 +45,11 @@ class DAPConnection:
         self.writer = writer
         self.dispatcher = dispatcher or Dispatcher()
 
+    @classmethod
+    async def from_tcp(cls, host, address):
+        reader, writer = await asyncio.open_connection(host, address)
+        return cls(reader, writer)
+
     async def request(self, request: Request) -> Response:
         future_response: asyncio.Future = self.send_message(request)
         response: Response = await future_response
