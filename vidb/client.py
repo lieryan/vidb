@@ -1,13 +1,11 @@
-import json
 from itertools import count
+from typing import TypeVar, Type
 
-from vidb.dap import (
-    InitializeRequest,
-    InitializeRequestArguments,
-    _Request,
-    _Response,
-)
 from vidb.connection import DAPConnection
+from vidb.dap import Request, InitializeRequest, InitializeRequestArguments
+
+
+T = TypeVar("T", bound=Request)
 
 
 class DAPClient:
@@ -17,15 +15,9 @@ class DAPClient:
     def __init__(self, connection):
         self.connection = connection
 
-    async def send(self, request: _Request) -> _Response:
-        prepared_request: bytes = json.dumps(request).encode("utf-8")
-        raw_response: bytes = await self.connection._send(prepared_request)
-        response: _Response = json.loads(raw_response.decode("utf-8"))
-        return response
-
     async def initialize(self) -> None:
         request = self._create_initialize_request()
-        response = await self.send(request)
+        response = await self.connection.send_message(request)
         print("response", response)
 
     def _create_initialize_request(self) -> InitializeRequest:
@@ -35,7 +27,10 @@ class DAPClient:
             adapterID="vidb",
             locale="en-US",
         )
-        return InitializeRequest(
+        return self.make_request(InitializeRequest, arguments)
+
+    def make_request(self, request_cls: type[T], arguments) -> T:
+        return request_cls(
             seq=next(self.sequence),
             type="request",
             command="initialize",
