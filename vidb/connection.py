@@ -38,7 +38,6 @@ class Dispatcher:
 
 
 class DAPConnection:
-    sequence = count()
     dispatcher: Dispatcher
 
     def __init__(self, reader, writer, dispatcher=None):
@@ -106,15 +105,3 @@ class DAPConnection:
 
             case _:
                 raise ValueError()
-
-    def _handle_initialize(self, request: InitializeRequest) -> InitializeResponse:
-        capabilities = Capabilities()
-        return InitializeResponse(
-            seq=next(self.sequence),
-            type="response",
-            request_seq=request["seq"],
-            success=True,
-            command=request["command"],
-            message="",
-            body=capabilities,
-        )
