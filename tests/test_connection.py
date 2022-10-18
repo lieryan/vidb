@@ -28,13 +28,13 @@ class TestConnection:
         headers = await connection.read_headers()
         assert headers == {"Content-Length": "10"}
 
-    async def test_read_message(self, create_reader_message_pipe):
+    async def test_recv_message(self, create_reader_message_pipe):
         reader = await create_reader_message_pipe(
             {"k": "v"},
         )
 
         connection = DAPConnection(reader, None)
-        message = await connection.read_message()
+        message = await connection.recv_message()
         assert message == {"k": "v"}
 
     async def test_dispatch_request_message_returns_future(self):

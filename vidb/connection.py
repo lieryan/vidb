@@ -58,7 +58,7 @@ class DAPConnection:
             headers[header_name] = header_value
         return headers
 
-    async def read_message(self) -> ProtocolMessage:
+    async def recv_message(self) -> ProtocolMessage:
         headers = await self.read_headers()
         body = await self.reader.readexactly(int(headers["Content-Length"]))
 
