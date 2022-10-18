@@ -43,7 +43,7 @@ class TestConnection:
             "seq": 123,
         }
 
-    async def test_dispatch_request_message_returns_future(self):
+    def test_dispatch_request_message_returns_future(self):
         message = {
             "type": "request",
             "seq": 123,
@@ -53,10 +53,10 @@ class TestConnection:
         assert 123 not in connection.dispatcher.futures
         future_response = connection.dispatch_message(message)
         assert 123 in connection.dispatcher.futures
-        assert isinstance(connection.dispatcher.futures[123], asyncio.Future)
+        assert isinstance(future_response, asyncio.Future)
         assert connection.dispatcher.futures[123] is future_response
 
-    async def test_dispatch_response_message_sets_future(self):
+    def test_dispatch_response_message_sets_future(self):
         message = {
             "type": "response",
             "seq": 123,
@@ -73,3 +73,21 @@ class TestConnection:
 
         assert future_response.done()
         assert 123 not in connection.dispatcher.futures
+
+    async def test_send_message(self, pipe_connection_factory):
+        reader, writer = await pipe_connection_factory()
+
+        connection = DAPConnection(None, writer)
+
+        message = {
+            "type": "request",
+            "seq": 123,
+        }
+
+        future_response = connection.send_message(message)
+
+        assert isinstance(future_response, asyncio.Future)
+
+        writer.close()
+        data = await reader.read()
+        assert data == b'Content-Length: 31\r\n\r\n{"type": "request", "seq": 123}'

@@ -46,9 +46,19 @@ class DAPConnection:
         self.writer = writer
         self.dispatcher = dispatcher or Dispatcher()
 
-    async def _send(self, request: bytes) -> None:
-        self.writer.write(f"Content-Length: {len(request)}".encode("ascii") + b"\r\n\r\n")
+    def _send(self, request: bytes) -> None:
+        self.writer.write(f"Content-Length: {len(request)}".encode("ascii") + b"\r\n")
+        self.writer.write(b"\r\n")
         self.writer.write(request)
+
+    def send_message(self, request: Request) -> asyncio.Future:
+        assert request["type"] == "request"
+        future_response = self.dispatch_message(request)
+
+        prepared_request: bytes = json.dumps(request).encode("utf-8")
+        self._send(prepared_request)
+
+        return future_response
 
     async def read_headers(self) -> dict[str, str]:
         headers: dict[str, str] = {}
