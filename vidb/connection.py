@@ -25,9 +25,9 @@ class DAPConnection:
         self.writer.write(f"Content-Length: {len(request)}".encode("ascii") + b"\r\n\r\n")
         self.writer.write(request)
 
-    async def read_headers(self, reader) -> dict[str, str]:
+    async def read_headers(self) -> dict[str, str]:
         headers: dict[str, str] = {}
-        while (header := await reader.readline()) != b"\r\n":
+        while (header := await self.reader.readline()) != b"\r\n":
             header_name, header_value = header.decode("ascii").split(":")
             header_value = header_value.strip()
             headers[header_name] = header_value
