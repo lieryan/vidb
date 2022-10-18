@@ -21,7 +21,7 @@ class DAPConnection:
     def _validate_initialize(self, parsed_request: _Request) -> InitializeRequest:
         return cast(InitializeRequest, parsed_request)
 
-    async def _send(self, request: bytes):
+    async def _send(self, request: bytes) -> None:
         self.writer.write(f"Content-Length: {len(request)}".encode("ascii") + b"\r\n\r\n")
         self.writer.write(request)
 
