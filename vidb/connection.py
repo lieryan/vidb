@@ -11,19 +11,15 @@ from vidb.dap import (
 )
 
 
-class DAPDebugger:
+class DAPConnection:
     sequence = count()
 
     def _validate_initialize(self, parsed_request: _Request) -> InitializeRequest:
         return cast(InitializeRequest, parsed_request)
 
-    async def _send(self, request: bytes) -> bytes:
-        parsed_request: _Request = json.loads(request.decode("utf-8"))
-        response: _Response = self._handle_initialize(
-            self._validate_initialize(parsed_request),
-        )
-        prepared_response: bytes = json.dumps(response).encode("utf-8")
-        return prepared_response
+    async def _send(self, request: bytes):
+        self.writer.write(f"Content-Length: {len(request)}".encode("ascii") + b"\r\n\r\n")
+        self.writer.write(request)
 
     def _handle_initialize(self, request: InitializeRequest) -> InitializeResponse:
         capabilities = Capabilities()

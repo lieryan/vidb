@@ -7,19 +7,19 @@ from vidb.dap import (
     _Request,
     _Response,
 )
-from vidb.debugger import DAPDebugger
+from vidb.connection import DAPConnection
 
 
 class DAPClient:
     sequence = count()
-    server: DAPDebugger
+    connection: DAPConnection
 
-    def __init__(self, server):
-        self.server = server
+    def __init__(self, connection):
+        self.connection = connection
 
     async def send(self, request: _Request) -> _Response:
         prepared_request: bytes = json.dumps(request).encode("utf-8")
-        raw_response: bytes = await self.server._send(prepared_request)
+        raw_response: bytes = await self.connection._send(prepared_request)
         response: _Response = json.loads(raw_response.decode("utf-8"))
         return response
 

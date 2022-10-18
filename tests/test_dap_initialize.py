@@ -3,7 +3,7 @@ import os
 from contextlib import asynccontextmanager
 
 from vidb.client import DAPClient
-from vidb.debugger import DAPDebugger
+from vidb.connection import DAPConnection
 
 
 class TestInitialize:
