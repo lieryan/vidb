@@ -30,12 +30,18 @@ class TestConnection:
 
     async def test_recv_message(self, create_reader_message_pipe):
         reader = await create_reader_message_pipe(
-            {"k": "v"},
+            {
+                "type": "response",
+                "seq": 123,
+            },
         )
 
         connection = DAPConnection(reader, None)
         message = await connection.recv_message()
-        assert message == {"k": "v"}
+        assert message == {
+            "type": "response",
+            "seq": 123,
+        }
 
     async def test_dispatch_request_message_returns_future(self):
         message = {

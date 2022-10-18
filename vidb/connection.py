@@ -58,11 +58,13 @@ class DAPConnection:
             headers[header_name] = header_value
         return headers
 
-    async def recv_message(self) -> ProtocolMessage:
+    async def recv_message(self) -> Response | Event:
         headers = await self.read_headers()
         body = await self.reader.readexactly(int(headers["Content-Length"]))
 
-        return json.loads(body.decode("utf-8"))
+        message = json.loads(body.decode("utf-8"))
+        assert message["type"] in ["response", "event"]
+        return message
 
     def dispatch_message(self, message: ProtocolMessage) -> asyncio.Future:
         match message["type"]:
