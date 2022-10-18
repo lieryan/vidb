@@ -27,3 +27,10 @@ class TestConnection:
         connection = DAPConnection(reader, None)
         headers = await connection.read_headers()
         assert headers == {"Content-Length": "10"}
+
+    async def test_read_message(self, create_reader_pipe):
+        reader = await create_reader_pipe(b"Content-Length: 10\r\n\r\n" + (b'{"k": "v"}'))
+
+        connection = DAPConnection(reader, None)
+        message = await connection.read_message()
+        assert message == {"k": "v"}

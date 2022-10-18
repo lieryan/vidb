@@ -33,6 +33,12 @@ class DAPConnection:
             headers[header_name] = header_value
         return headers
 
+    async def read_message(self) -> ProtocolMessage:
+        headers = await self.read_headers()
+        body = await self.reader.readexactly(int(headers["Content-Length"]))
+
+        return json.loads(body.decode("utf-8"))
+
     def _handle_initialize(self, request: InitializeRequest) -> InitializeResponse:
         capabilities = Capabilities()
         return InitializeResponse(
