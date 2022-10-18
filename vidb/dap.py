@@ -28,10 +28,10 @@ class _Request(_ProtocolMessage):
     type: Literal["request"]
 
 
-class Request(_Request):
-    command: str
-
-    arguments: Optional[Any]
+class _UnvalidatedRequest(_Request):
+    pass
+    # command: str
+    # arguments: Optional[Any]
 
 
 class Event(_ProtocolMessage):
@@ -62,10 +62,6 @@ class Response(_Response):
 class ErrorResponse(_Response):
     """ On error (whenever success is false), the body can provide more details. """
     body: Optional[Message]
-
-
-ProtocolMessage = Request | Response | Event
-UnvalidatedProtocolMessage = ProtocolMessage | _UnvalidatedProtocolMessage
 
 
 class Message:
@@ -153,3 +149,11 @@ class Capabilities(TypedDict):
     # supportsInstructionBreakpoints: Optional[bool]
     # supportsExceptionFilterOptions: Optional[bool]
     # supportsSingleThreadExecutionRequests: Optional[bool]
+
+
+Request = InitializeRequest
+UnvalidatedRequest = Request | _UnvalidatedProtocolMessage
+
+
+ProtocolMessage = Request | Response | Event
+UnvalidatedProtocolMessage = ProtocolMessage | _UnvalidatedProtocolMessage
