@@ -52,7 +52,7 @@ class DAPConnection:
         return response
 
     @classmethod
-    def write_message(self, writer, request: Request) -> None:
+    def write_message(cls, writer, request: Request) -> None:
         prepared_request: bytes = json.dumps(request).encode("utf-8")
         writer.write(f"Content-Length: {len(prepared_request)}".encode("ascii") + b"\r\n")
         writer.write(b"\r\n")
