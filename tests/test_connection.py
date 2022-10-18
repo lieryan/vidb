@@ -91,3 +91,24 @@ class TestConnection:
         writer.close()
         data = await reader.read()
         assert data == b'Content-Length: 31\r\n\r\n{"type": "request", "seq": 123}'
+
+    async def test_request_response(self, pipe_connection_factory, create_reader_message_pipe):
+        response_message = {
+            "type": "response",
+            "request_seq": 123,
+        }
+        reader, reader_writer = await pipe_connection_factory()
+        _, writer = await pipe_connection_factory()
+
+        connection = DAPConnection(reader, writer)
+
+        request_message = {
+            "type": "request",
+            "seq": 123,
+        }
+
+        DAPConnection.write_message(reader_writer, response_message)
+
+        asyncio.create_task(connection.handle_messages())
+        response = await connection.request(request_message)
+        assert response == response_message

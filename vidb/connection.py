@@ -46,17 +46,23 @@ class DAPConnection:
         self.writer = writer
         self.dispatcher = dispatcher or Dispatcher()
 
-    def _send(self, request: bytes) -> None:
-        self.writer.write(f"Content-Length: {len(request)}".encode("ascii") + b"\r\n")
-        self.writer.write(b"\r\n")
-        self.writer.write(request)
+    async def request(self, request: Request) -> Response:
+        future_response: asyncio.Future = self.send_message(request)
+        response: Response = await future_response
+        return response
+
+    @classmethod
+    def write_message(self, writer, request: Request) -> None:
+        prepared_request: bytes = json.dumps(request).encode("utf-8")
+        writer.write(f"Content-Length: {len(prepared_request)}".encode("ascii") + b"\r\n")
+        writer.write(b"\r\n")
+        writer.write(prepared_request)
 
     def send_message(self, request: Request) -> asyncio.Future:
         assert request["type"] == "request"
         future_response = self.dispatch_message(request)
 
-        prepared_request: bytes = json.dumps(request).encode("utf-8")
-        self._send(prepared_request)
+        self.write_message(self.writer, request)
 
         return future_response
 
@@ -75,6 +81,11 @@ class DAPConnection:
         message = json.loads(body.decode("utf-8"))
         assert message["type"] in ["response", "event"]
         return message
+
+    async def handle_messages(self) -> None:
+        while True:
+            message: Response | Event = await self.recv_message()
+            self.dispatch_message(message)
 
     def dispatch_message(self, message: ProtocolMessage) -> asyncio.Future:
         match message["type"]:
