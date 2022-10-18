@@ -37,7 +37,7 @@ class TestConnection:
         message = await connection.read_message()
         assert message == {"k": "v"}
 
-    async def test_dispatch_request_message(self):
+    async def test_dispatch_request_message_returns_future(self):
         message = {
             "type": "request",
             "seq": 123,
@@ -45,5 +45,7 @@ class TestConnection:
         connection = DAPConnection(None, None)
 
         assert 123 not in connection.dispatcher.futures
-        connection.dispatch_message(message)
+        future_response = connection.dispatch_message(message)
         assert 123 in connection.dispatcher.futures
+        assert isinstance(connection.dispatcher.futures[123], asyncio.Future)
+        assert connection.dispatcher.futures[123] is future_response

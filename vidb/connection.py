@@ -1,3 +1,4 @@
+import asyncio
 import json
 from itertools import count
 from typing import cast
@@ -17,9 +18,12 @@ class Dispatcher:
     def __init__(self):
         self.futures = {}
 
-    def handle_request(self, message: Request):
+    def handle_request(self, message: Request) -> asyncio.Future:
         assert message["seq"] not in self.futures
-        self.futures[message["seq"]] = None
+
+        future_response: asyncio.Future = asyncio.Future()
+        self.futures[message["seq"]] = future_response
+        return future_response
 
     def handle_response(self, message: Response):
         pass
@@ -58,17 +62,17 @@ class DAPConnection:
     def dispatch_message(self, message: ProtocolMessage) -> None:
         match message["type"]:
             case "request":
-                self.dispatcher.handle_request(
+                return self.dispatcher.handle_request(
                     cast(Request, message),
                 )
 
             case "response":
-                self.dispatcher.handle_response(
+                return self.dispatcher.handle_response(
                     cast(Response, message),
                 )
 
             case "event":
-                self.dispatcher.handle_event(
+                return self.dispatcher.handle_event(
                     cast(Event, message),
                 )
 
