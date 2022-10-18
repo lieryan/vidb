@@ -59,7 +59,7 @@ class TestConnection:
     def test_dispatch_response_message_sets_future(self):
         message = {
             "type": "response",
-            "seq": 123,
+            "request_seq": 123,
         }
         connection = DAPConnection(None, None)
 

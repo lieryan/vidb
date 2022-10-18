@@ -26,9 +26,9 @@ class Dispatcher:
         return future_response
 
     def handle_response(self, message: Response):
-        assert message["seq"] in self.futures
+        assert message["request_seq"] in self.futures
 
-        future_response = self.futures.pop(message["seq"])
+        future_response = self.futures.pop(message["request_seq"])
         future_response.set_result(message)
 
         return future_response
