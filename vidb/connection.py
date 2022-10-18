@@ -26,7 +26,12 @@ class Dispatcher:
         return future_response
 
     def handle_response(self, message: Response):
-        pass
+        assert message["seq"] in self.futures
+
+        future_response = self.futures.pop(message["seq"])
+        future_response.set_result(message)
+
+        return future_response
 
     def handle_event(self, message: Event):
         pass
@@ -59,7 +64,7 @@ class DAPConnection:
 
         return json.loads(body.decode("utf-8"))
 
-    def dispatch_message(self, message: ProtocolMessage) -> None:
+    def dispatch_message(self, message: ProtocolMessage) -> asyncio.Future:
         match message["type"]:
             case "request":
                 return self.dispatcher.handle_request(

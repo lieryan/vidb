@@ -49,3 +49,21 @@ class TestConnection:
         assert 123 in connection.dispatcher.futures
         assert isinstance(connection.dispatcher.futures[123], asyncio.Future)
         assert connection.dispatcher.futures[123] is future_response
+
+    async def test_dispatch_response_message_sets_future(self):
+        message = {
+            "type": "response",
+            "seq": 123,
+        }
+        connection = DAPConnection(None, None)
+
+        future_response = asyncio.Future()
+        connection.dispatcher.futures[123] = future_response
+
+        assert not future_response.done()
+        assert 123 in connection.dispatcher.futures
+
+        future_response = connection.dispatch_message(message)
+
+        assert future_response.done()
+        assert 123 not in connection.dispatcher.futures
