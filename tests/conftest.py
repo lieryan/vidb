@@ -44,3 +44,16 @@ def pipe_connection_factory():
     finally:
         for t in transports:
             t.close()
+
+
+@pytest.fixture
+def create_reader_pipe(pipe_connection_factory):
+    async def _factory(data):
+        reader, writer = await pipe_connection_factory()
+
+        writer.write(data)
+        writer.close()
+
+        return reader
+
+    return _factory

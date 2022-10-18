@@ -12,21 +12,18 @@ class TestConnection:
             self._reader, self._writer = await asyncio.open_connection(host="localhost", port=8833)
         return self._reader, self._writer
 
-    async def test_open_pipe_connection(self, pipe_connection_factory):
-        reader, writer = await pipe_connection_factory()
+    async def test_open_pipe_connection(self, create_reader_pipe):
+        reader = await create_reader_pipe(b"Content-Length: 10\r\n\r\n" + (b"a" * 10))
 
-        writer.write(b"Content-Length: 10\r\n\r\n" + (b"a" * 10))
         assert await reader.readline() == b"Content-Length: 10\r\n"
         assert await reader.readline() == b"\r\n"
         assert await reader.read(10) == b"a" * 10
 
-        writer.close()
         assert await reader.read() == b""
 
-    async def test_read_headers(self, pipe_connection_factory):
-        reader, writer = await pipe_connection_factory()
+    async def test_read_headers(self, create_reader_pipe):
+        reader = await create_reader_pipe(b"Content-Length: 10\r\n\r\n" + (b"a" * 10))
 
         connection = DAPConnection(None, None)
-        writer.write(b"Content-Length: 10\r\n\r\n" + (b"a" * 10))
         headers = await connection.read_headers(reader)
         assert headers == {"Content-Length": "10"}
