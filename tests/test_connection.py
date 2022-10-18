@@ -28,9 +28,22 @@ class TestConnection:
         headers = await connection.read_headers()
         assert headers == {"Content-Length": "10"}
 
-    async def test_read_message(self, create_reader_pipe):
-        reader = await create_reader_pipe(b"Content-Length: 10\r\n\r\n" + (b'{"k": "v"}'))
+    async def test_read_message(self, create_reader_message_pipe):
+        reader = await create_reader_message_pipe(
+            {"k": "v"},
+        )
 
         connection = DAPConnection(reader, None)
         message = await connection.read_message()
         assert message == {"k": "v"}
+
+    async def test_dispatch_request_message(self):
+        message = {
+            "type": "request",
+            "seq": 123,
+        }
+        connection = DAPConnection(None, None)
+
+        assert 123 not in connection.dispatcher.futures
+        connection.dispatch_message(message)
+        assert 123 in connection.dispatcher.futures

@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 
 import pytest
@@ -55,5 +56,20 @@ def create_reader_pipe(pipe_connection_factory):
         writer.close()
 
         return reader
+
+    return _factory
+
+
+@pytest.fixture
+def create_reader_message_pipe(create_reader_pipe):
+    async def _factory(*messages):
+        chunks = []
+        for message in messages:
+            raw_message = json.dumps(message).encode("utf-8")
+            chunks.append(f"Content-Length: {len(raw_message)}\r\n".encode("utf-8"))
+            chunks.append(b"\r\n")
+            chunks.append(raw_message)
+
+        return await create_reader_pipe(b"".join(chunks))
 
     return _factory
