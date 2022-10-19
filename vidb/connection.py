@@ -17,6 +17,7 @@ from vidb.dap import (
 class Dispatcher:
     def __init__(self):
         self.futures = {}
+        self.events = {}
 
     def handle_request(self, message: Request) -> asyncio.Future:
         assert message["seq"] not in self.futures
@@ -34,7 +35,9 @@ class Dispatcher:
         return future_response
 
     def handle_event(self, message: Event):
-        pass
+        handlers = self.events.get(message["event"], {})
+        for handler in handlers:
+            handler()
 
 
 class DAPConnection:
