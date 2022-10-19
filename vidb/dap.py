@@ -29,9 +29,9 @@ class _Request(_ProtocolMessage):
 
 
 class _UnvalidatedRequest(_Request):
-    pass
-    # command: str
-    # arguments: Optional[Any]
+    command: str
+
+    arguments: Optional[Any]
 
 
 class Event(_ProtocolMessage):
