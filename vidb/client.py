@@ -1,11 +1,79 @@
+import asyncio
 from itertools import count
-from typing import TypeVar, Type
+from typing import TypeVar
 
 from vidb.connection import DAPConnection
-from vidb.dap import Request, InitializeRequest, InitializeRequestArguments
+from vidb.dap import (
+    InitializeRequest,
+    InitializeRequestArguments,
+    InitializeResponse,
+    Request,
+)
 
 
 T = TypeVar("T", bound=Request)
+
+
+class SupportFlags:
+    pass
+
+
+async def initialize(client):
+    arguments: InitializeRequestArguments = InitializeRequestArguments(
+        clientID="vidb",
+        clientName="vidb",
+        adapterID="vidb",
+        locale="en-US",
+
+        linesStartAt1=True,
+        columnsStartAt1=True,
+        pathFormat="path",
+        supportsVariableType=True,
+    )
+
+    response = await client.remote_call(
+        InitializeRequest,
+        "initialize",
+        arguments,
+    )
+
+    client.server_support.configuration_done_request = \
+        response["body"]["supportsConfigurationDoneRequest"]
+
+    return response
+
+
+def attach(client):
+    arguments = dict(arguments=[])
+    return client.remote_call(
+        dict,
+        "attach",
+        arguments,
+    )
+
+
+def configuration_done(client):
+    arguments = dict()
+    return client.remote_call(
+        dict,
+        "configurationDone",
+        arguments,
+    )
+
+
+def set_breakpoints(client, path, breakpoints):
+    arguments = dict(
+        source=dict(
+            path=path,
+        ),
+        breakpoints=[{"line": bp} for bp in breakpoints],
+    )
+    return client.remote_call(
+        dict,
+        "setBreakpoints",
+        arguments,
+    )
+
 
 
 class DAPClient:
@@ -14,25 +82,50 @@ class DAPClient:
 
     def __init__(self, connection):
         self.connection = connection
+        self.server_support = SupportFlags()
+
+    def wait_for_event(self, event_name):
+        event = asyncio.Event()
+        self.add_event_listener(event_name, event.set)
+        async def _waiter():
+            await event.wait()
+            self.remove_event_listener(event_name, event.set)
+        return _waiter()
+
+    def add_event_listener(self, event_name, listener):
+        listeners = self.connection.dispatcher.events.setdefault(event_name, set())
+        listeners.add(listener)
+
+    def remove_event_listener(self, event_name, listener):
+        listeners = self.connection.dispatcher.events.setdefault(event_name, set())
+        listeners.remove(listener)
 
     async def initialize(self) -> None:
-        request = self._create_initialize_request()
-        response = await self.connection.send_message(request)
-        print("response", response)
+        await initialize(self)
+        initialized_event = self.wait_for_event("initialized")
+        attach_response = attach(self)
+        await initialized_event
+        # await set_breakpoints(self, path="myscript.py", breakpoints=[2,9])
+        await configuration_done(self)
+        await attach_response
 
-    def _create_initialize_request(self) -> InitializeRequest:
-        arguments = InitializeRequestArguments(
-            clientID="vidb",
-            clientName="vidb",
-            adapterID="vidb",
-            locale="en-US",
+    def remote_call(self, request_cls, command, arguments):
+        request = self.prepare_request(
+            request_cls,
+            command,
+            arguments,
         )
-        return self.make_request(InitializeRequest, arguments)
+        return self.connection.send_message(request)
 
-    def make_request(self, request_cls: type[T], arguments) -> T:
+    def prepare_request(
+        self,
+        request_cls: type[T],
+        command: str,
+        arguments,
+    ) -> T:
         return request_cls(
             seq=next(self.sequence),
             type="request",
-            command="initialize",
+            command=command,
             arguments=arguments,
         )
