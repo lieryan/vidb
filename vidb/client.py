@@ -106,7 +106,8 @@ class DAPClient:
         attach_response = attach(self)
         await initialized_event
         # await set_breakpoints(self, path="myscript.py", breakpoints=[2,9])
-        await configuration_done(self)
+        if self.server_support.configuration_done_request:
+            await configuration_done(self)
         await attach_response
 
     def remote_call(self, request_cls, command, arguments):
