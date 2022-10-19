@@ -113,8 +113,7 @@ class InitializeResponse(_Response):
 
 
 class Capabilities(TypedDict):
-    pass
-    # supportsConfigurationDoneRequest: Optional[bool]
+    supportsConfigurationDoneRequest: Optional[bool]
     # supportsFunctionBreakpoints: Optional[bool]
     # supportsConditionalBreakpoints: Optional[bool]
     # supportsHitConditionalBreakpoints: Optional[bool]

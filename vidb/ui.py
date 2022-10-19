@@ -1,6 +1,7 @@
 from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.document import Document
+from prompt_toolkit.enums import EditingMode
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout.containers import VSplit, HSplit, Window
 from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
@@ -139,6 +140,7 @@ class UI:
             key_bindings=self.global_bindings,
             full_screen=True,
             mouse_support=True,
+            editing_mode=EditingMode.VI,
         )
 
         self.source_widget.source_file = open("vidb/ui.py")
