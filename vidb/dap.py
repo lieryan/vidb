@@ -75,6 +75,10 @@ class Message:
     # urlLabel: Optional[str]
 
 
+##################
+### Initialize ###
+##################
+
 class InitializeRequest(_Request):
     command: Literal["initialize"]
 
@@ -151,8 +155,23 @@ class Capabilities(TypedDict):
     # supportsSingleThreadExecutionRequests: Optional[bool]
 
 
-Request = InitializeRequest
-UnvalidatedRequest = Request | _UnvalidatedProtocolMessage
+##############
+### Launch ###
+##############
+
+class LaunchRequest(_Request):
+    command: Literal["launch"]
+    arguments: LaunchRequestArguments
+
+
+class LaunchRequestArguments:
+    noDebug: Optional[bool]
+
+    __restart: Optional[Any]
+
+
+Request = InitializeRequest | LaunchRequest
+UnvalidatedRequest = Request | _UnvalidatedRequest
 
 
 ProtocolMessage = Request | Response | Event
