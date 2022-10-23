@@ -101,8 +101,14 @@ class DAPClient:
         listeners.remove(listener)
 
     async def initialize(self) -> None:
-        await initialize(self)
+        # Initialization sequence:
+        #
+        #     https://github.com/microsoft/vscode/issues/4902#issuecomment-368583522
+        #
+
         initialized_event = self.wait_for_event("initialized")
+
+        await initialize(self)
         attach_response = attach(self)
         await initialized_event
         # await set_breakpoints(self, path="myscript.py", breakpoints=[2,9])
