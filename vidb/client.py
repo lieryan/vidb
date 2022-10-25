@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 from itertools import count
 from typing import TypeVar
@@ -18,7 +20,7 @@ class SupportFlags:
     pass
 
 
-async def initialize(client):
+async def initialize(client: DAPClient):
     arguments: InitializeRequestArguments = InitializeRequestArguments(
         clientID="vidb",
         clientName="vidb",
@@ -43,7 +45,7 @@ async def initialize(client):
     return response
 
 
-def attach(client):
+def attach(client: DAPClient):
     arguments = dict(arguments=[])
     return client.remote_call(
         dict,
@@ -52,7 +54,7 @@ def attach(client):
     )
 
 
-def configuration_done(client):
+def configuration_done(client: DAPClient):
     arguments = dict()
     return client.remote_call(
         dict,
@@ -61,7 +63,7 @@ def configuration_done(client):
     )
 
 
-def set_breakpoints(client, path, breakpoints):
+def set_breakpoints(client: DAPClient, path, breakpoints):
     arguments = dict(
         source=dict(
             path=path,
