@@ -94,11 +94,11 @@ class InitializeRequestArguments(TypedDict):
 
     locale: Optional[str]
 
-    # linesStartAt1: Optional[bool]
-    # columnsStartAt1: Optional[bool]
-    # pathFormat: Optional[Literal["path", "uri"] | str]
+    linesStartAt1: Optional[bool]
+    columnsStartAt1: Optional[bool]
+    pathFormat: Optional[Literal["path", "uri"] | str]
+    supportsVariableType: Optional[bool]
 
-    # supportsVariableType: Optional[bool]
     # supportsVariablePaging: Optional[bool]
     # supportsRunInTerminalRequest: Optional[bool]
     # supportsMemoryReferences: Optional[bool]
