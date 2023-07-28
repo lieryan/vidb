@@ -79,7 +79,7 @@ def set_breakpoints(client: DAPClient, path, breakpoints):
 
 
 class DAPClient:
-    sequence = count()
+    sequence = count(1)
     connection: DAPConnection
 
     def __init__(self, connection):
