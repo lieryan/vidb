@@ -52,8 +52,11 @@ class DAPConnection:
     async def from_tcp(cls, host, address):
         reader, writer = await asyncio.open_connection(host, address)
         conn = cls(reader, writer)
-        asyncio.create_task(conn.handle_messages())
+        conn.start_listening()
         return conn
+
+    def start_listening(self):
+        asyncio.create_task(self.handle_messages())
 
     async def request(self, request: Request) -> Response:
         future_response: asyncio.Future = self.send_message(request)
