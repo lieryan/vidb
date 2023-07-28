@@ -40,12 +40,39 @@ class Dispatcher:
             handler()
 
 
-class DAPConnection:
+class BaseDAPConnection:
+    def __init__(self, reader, writer):
+        super().__init__()
+        self.reader = reader
+        self.writer = writer
+
+    @classmethod
+    def write_message(cls, writer, msg: ProtocolMessage) -> None:
+        prepared_msg: bytes = json.dumps(msg).encode("utf-8")
+        writer.write(f"Content-Length: {len(prepared_msg)}".encode("ascii") + b"\r\n")
+        writer.write(b"\r\n")
+        writer.write(prepared_msg)
+
+    async def read_headers(self) -> dict[str, str]:
+        headers: dict[str, str] = {}
+        while (header := await self.reader.readline()) != b"\r\n":
+            header_name, header_value = header.decode("ascii").split(":")
+            header_value = header_value.strip()
+            headers[header_name] = header_value
+        return headers
+
+    async def recv_message(self) -> ProtocolMessage:
+        headers = await self.read_headers()
+        body = await self.reader.readexactly(int(headers["Content-Length"]))
+
+        return json.loads(body.decode("utf-8"))
+
+
+class DAPConnection(BaseDAPConnection):
     dispatcher: Dispatcher
 
     def __init__(self, reader, writer, dispatcher=None):
-        self.reader = reader
-        self.writer = writer
+        super().__init__(reader, writer)
         self.dispatcher = dispatcher or Dispatcher()
 
     @classmethod
@@ -63,13 +90,6 @@ class DAPConnection:
         response: Response = await future_response
         return response
 
-    @classmethod
-    def write_message(cls, writer, request: Request) -> None:
-        prepared_request: bytes = json.dumps(request).encode("utf-8")
-        writer.write(f"Content-Length: {len(prepared_request)}".encode("ascii") + b"\r\n")
-        writer.write(b"\r\n")
-        writer.write(prepared_request)
-
     def send_message(self, request: Request) -> asyncio.Future:
         assert request["type"] == "request"
         future_response = self.dispatch_message(request)
@@ -78,20 +98,9 @@ class DAPConnection:
 
         return future_response
 
-    async def read_headers(self) -> dict[str, str]:
-        headers: dict[str, str] = {}
-        while (header := await self.reader.readline()) != b"\r\n":
-            header_name, header_value = header.decode("ascii").split(":")
-            header_value = header_value.strip()
-            headers[header_name] = header_value
-        return headers
-
     async def recv_message(self) -> Response | Event:
-        headers = await self.read_headers()
-        body = await self.reader.readexactly(int(headers["Content-Length"]))
-
-        message = json.loads(body.decode("utf-8"))
-        assert message["type"] in ["response", "event"]
+        message = await super().recv_message()
+        assert message["type"] == "response" or message["type"] == "event"
         return message
 
     async def handle_messages(self) -> None:
