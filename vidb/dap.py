@@ -5,13 +5,9 @@ Translated to Python from [DAP specification](https://microsoft.github.io/debug-
 """
 from __future__ import annotations
 
-from typing import (
-    Any,
-    List,
-    Literal,
-    Optional,
-    TypedDict,
-)
+from typing import Any, Literal, TypedDict
+
+from typing_extensions import NotRequired
 
 
 class _ProtocolMessage(TypedDict):
@@ -31,7 +27,7 @@ class _Request(_ProtocolMessage):
 class _UnvalidatedRequest(_Request):
     command: str
 
-    arguments: Optional[Any]
+    arguments: NotRequired[Any]
 
 
 class Event(_ProtocolMessage):
@@ -39,7 +35,7 @@ class Event(_ProtocolMessage):
 
     event: str
 
-    body: Optional[Any]
+    body: NotRequired[Any]
 
 
 class _Response(_ProtocolMessage):
@@ -51,28 +47,28 @@ class _Response(_ProtocolMessage):
 
     command: str
 
-    message: Optional[Literal["cancelled"] | str]
+    message: NotRequired[Literal["cancelled", "notStopped"] | str]
 
 
 class Response(_Response):
     """ Response for a request. """
-    body: Optional[Any]
+    body: NotRequired[Any]
 
 
 class ErrorResponse(_Response):
     """ On error (whenever success is false), the body can provide more details. """
-    body: Optional[Message]
+    body: NotRequired[Message]
 
 
 class Message:
     """ A structured message object. Used to return errors from requests. """
     id: str
     format: str
-    # variables: Optional[...]
-    # sendTelemetry: Optional[bool]
-    # showUser: Optional[bool]
-    # url: Optional[str]
-    # urlLabel: Optional[str]
+    # variables: NotRequired[...]
+    # sendTelemetry: NotRequired[bool]
+    # showUser: NotRequired[bool]
+    # url: NotRequired[str]
+    # urlLabel: NotRequired[str]
 
 
 ##################
@@ -86,72 +82,73 @@ class InitializeRequest(_Request):
 
 
 class InitializeRequestArguments(TypedDict):
-    clientID: Optional[str]
+    clientID: NotRequired[str]
 
-    clientName: Optional[str]
+    clientName: NotRequired[str]
 
-    adapterID: Optional[str]
+    adapterID: NotRequired[str]
 
-    locale: Optional[str]
+    locale: NotRequired[str]
 
-    linesStartAt1: Optional[bool]
-    columnsStartAt1: Optional[bool]
-    pathFormat: Optional[Literal["path", "uri"] | str]
-    supportsVariableType: Optional[bool]
+    linesStartAt1: NotRequired[bool]
+    columnsStartAt1: NotRequired[bool]
+    pathFormat: NotRequired[Literal["path", "uri"] | str]
+    supportsVariableType: NotRequired[bool]
 
-    # supportsVariablePaging: Optional[bool]
-    # supportsRunInTerminalRequest: Optional[bool]
-    # supportsMemoryReferences: Optional[bool]
-    # supportsProgressReporting: Optional[bool]
-    # supportsInvalidatedEvent: Optional[bool]
-    # supportsMemoryEvent: Optional[bool]
-    # supportsArgsCanBeInterpretedByShell: Optional[bool]
+    # supportsVariablePaging: NotRequired[bool]
+    # supportsRunInTerminalRequest: NotRequired[bool]
+    # supportsMemoryReferences: NotRequired[bool]
+    # supportsProgressReporting: NotRequired[bool]
+    # supportsInvalidatedEvent: NotRequired[bool]
+    # supportsMemoryEvent: NotRequired[bool]
+    # supportsArgsCanBeInterpretedByShell: NotRequired[bool]
+    # supportsStartDebuggingRequest: NotRequired[bool]
 
 
 class InitializeResponse(_Response):
-    body: Capabilities
+    body: NotRequired[Capabilities]
 
 
 class Capabilities(TypedDict):
-    supportsConfigurationDoneRequest: Optional[bool]
-    # supportsFunctionBreakpoints: Optional[bool]
-    # supportsConditionalBreakpoints: Optional[bool]
-    # supportsHitConditionalBreakpoints: Optional[bool]
-    # supportsEvaluateForHovers: Optional[bool]
-    # exceptionBreakpointFilters: Optional[ExceptionBreakpointsFilter[]]
-    # supportsStepBack: Optional[bool]
-    # supportsSetVariable: Optional[bool]
-    # supportsRestartFrame: Optional[bool]
-    # supportsGotoTargetsRequest: Optional[bool]
-    # supportsStepInTargetsRequest: Optional[bool]
-    # supportsCompletionsRequest: Optional[bool]
-    # completionTriggerCharacters: Optional[List[str]]
-    # supportsModulesRequest: Optional[bool]
-    # additionalModuleColumns: Optional[ColumnDescriptor[]]
-    # supportedChecksumAlgorithms: Optional[ChecksumAlgorithm[]]
-    # supportsRestartRequest: Optional[bool]
-    # supportsExceptionOptions: Optional[bool]
-    # supportsValueFormattingOptions: Optional[bool]
-    # supportsExceptionInfoRequest: Optional[bool]
-    # supportTerminateDebuggee: Optional[bool]
-    # supportSuspendDebuggee: Optional[bool]
-    # supportsDelayedStackTraceLoading: Optional[bool]
-    # supportsLoadedSourcesRequest: Optional[bool]
-    # supportsLogPoints: Optional[bool]
-    # supportsTerminateThreadsRequest: Optional[bool]
-    # supportsSetExpression: Optional[bool]
-    # supportsTerminateRequest: Optional[bool]
-    # supportsDataBreakpoints: Optional[bool]
-    # supportsReadMemoryRequest: Optional[bool]
-    # supportsWriteMemoryRequest: Optional[bool]
-    # supportsDisassembleRequest: Optional[bool]
-    # supportsCancelRequest: Optional[bool]
-    # supportsBreakpointLocationsRequest: Optional[bool]
-    # supportsClipboardContext: Optional[bool]
-    # supportsSteppingGranularity: Optional[bool]
-    # supportsInstructionBreakpoints: Optional[bool]
-    # supportsExceptionFilterOptions: Optional[bool]
-    # supportsSingleThreadExecutionRequests: Optional[bool]
+    supportsConfigurationDoneRequest: NotRequired[bool]
+    # supportsFunctionBreakpoints: NotRequired[bool]
+    # supportsConditionalBreakpoints: NotRequired[bool]
+    # supportsHitConditionalBreakpoints: NotRequired[bool]
+    # supportsEvaluateForHovers: NotRequired[bool]
+    # exceptionBreakpointFilters: NotRequired[ExceptionBreakpointsFilter[]]
+    # supportsStepBack: NotRequired[bool]
+    # supportsSetVariable: NotRequired[bool]
+    # supportsRestartFrame: NotRequired[bool]
+    # supportsGotoTargetsRequest: NotRequired[bool]
+    # supportsStepInTargetsRequest: NotRequired[bool]
+    # supportsCompletionsRequest: NotRequired[bool]
+    # completionTriggerCharacters: NotRequired[List[str]]
+    # supportsModulesRequest: NotRequired[bool]
+    # additionalModuleColumns: NotRequired[ColumnDescriptor[]]
+    # supportedChecksumAlgorithms: NotRequired[ChecksumAlgorithm[]]
+    # supportsRestartRequest: NotRequired[bool]
+    # supportsExceptionOptions: NotRequired[bool]
+    # supportsValueFormattingOptions: NotRequired[bool]
+    # supportsExceptionInfoRequest: NotRequired[bool]
+    # supportTerminateDebuggee: NotRequired[bool]
+    # supportSuspendDebuggee: NotRequired[bool]
+    # supportsDelayedStackTraceLoading: NotRequired[bool]
+    # supportsLoadedSourcesRequest: NotRequired[bool]
+    # supportsLogPoints: NotRequired[bool]
+    # supportsTerminateThreadsRequest: NotRequired[bool]
+    # supportsSetExpression: NotRequired[bool]
+    # supportsTerminateRequest: NotRequired[bool]
+    # supportsDataBreakpoints: NotRequired[bool]
+    # supportsReadMemoryRequest: NotRequired[bool]
+    # supportsWriteMemoryRequest: NotRequired[bool]
+    # supportsDisassembleRequest: NotRequired[bool]
+    # supportsCancelRequest: NotRequired[bool]
+    # supportsBreakpointLocationsRequest: NotRequired[bool]
+    # supportsClipboardContext: NotRequired[bool]
+    # supportsSteppingGranularity: NotRequired[bool]
+    # supportsInstructionBreakpoints: NotRequired[bool]
+    # supportsExceptionFilterOptions: NotRequired[bool]
+    # supportsSingleThreadExecutionRequests: NotRequired[bool]
 
 
 ##############
@@ -163,10 +160,10 @@ class LaunchRequest(_Request):
     arguments: LaunchRequestArguments
 
 
-class LaunchRequestArguments:
-    noDebug: Optional[bool]
+class LaunchRequestArguments(TypedDict):
+    noDebug: NotRequired[bool]
 
-    __restart: Optional[Any]
+    __restart: NotRequired[Any]
 
 
 Request = InitializeRequest | LaunchRequest
