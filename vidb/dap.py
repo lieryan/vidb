@@ -109,6 +109,37 @@ class InitializeResponse(_Response):
     body: NotRequired[Capabilities]
 
 
+##############
+### Launch ###
+##############
+
+class LaunchRequest(_Request):
+    command: Literal["launch"]
+    arguments: LaunchRequestArguments
+
+
+class LaunchRequestArguments(TypedDict, total=False):
+    noDebug: NotRequired[bool]
+
+    __restart: NotRequired[Any]
+##############
+### Attach ###
+##############
+
+
+class AttachRequest(_Request):
+    command: Literal["attach"]
+    arguments: AttachRequestArguments
+
+
+class AttachRequestArguments(TypedDict, total=False):
+    __restart: NotRequired[Any]
+
+
+###########
+## Types ##
+###########
+
 class Capabilities(TypedDict):
     supportsConfigurationDoneRequest: NotRequired[bool]
     # supportsFunctionBreakpoints: NotRequired[bool]
@@ -149,35 +180,6 @@ class Capabilities(TypedDict):
     # supportsInstructionBreakpoints: NotRequired[bool]
     # supportsExceptionFilterOptions: NotRequired[bool]
     # supportsSingleThreadExecutionRequests: NotRequired[bool]
-
-
-##############
-### Attach ###
-##############
-
-
-class AttachRequest(_Request):
-    command: Literal["attach"]
-    arguments: AttachRequestArguments
-
-
-class AttachRequestArguments(TypedDict, total=False):
-    __restart: NotRequired[Any]
-
-
-##############
-### Launch ###
-##############
-
-class LaunchRequest(_Request):
-    command: Literal["launch"]
-    arguments: LaunchRequestArguments
-
-
-class LaunchRequestArguments(TypedDict):
-    noDebug: NotRequired[bool]
-
-    __restart: NotRequired[Any]
 
 
 Request = InitializeRequest | LaunchRequest | AttachRequest
