@@ -87,10 +87,10 @@ class TerminalWidget(Terminal):
         )
 
 
-class VariablesWidget(Window):
+class VariablesWidget:
     def __init__(self):
         self.bindings = KeyBindings()
-        super().__init__(
+        self.content = Window(
             content=FormattedTextControl(
                 text="Hello world",
                 focusable=True,
@@ -98,11 +98,17 @@ class VariablesWidget(Window):
             ),
         )
 
+    def __pt_container__(self):
+        return TitledWindow(
+            "Variables:",
+            self.content,
+        )
 
-class StacktraceWidget(Window):
+
+class StacktraceWidget:
     def __init__(self):
         self.bindings = KeyBindings()
-        super().__init__(
+        self.content = Window(
             content=FormattedTextControl(
                 text="Hello world",
                 focusable=True,
@@ -110,16 +116,28 @@ class StacktraceWidget(Window):
             ),
         )
 
+    def __pt_container__(self):
+        return TitledWindow(
+            "Stack:",
+            self.content,
+        )
 
-class BreakpointWidget(Window):
+
+class BreakpointWidget:
     def __init__(self):
         self.bindings = KeyBindings()
-        super().__init__(
+        self.content = Window(
             content=FormattedTextControl(
                 text="Hello world",
                 focusable=True,
                 key_bindings=self.bindings,
             ),
+        )
+
+    def __pt_container__(self):
+        return TitledWindow(
+            "Breakpoints:",
+            self.content,
         )
 
 
@@ -173,22 +191,13 @@ class UI:
             HSplit(
                 [
                     # Variables
-                    TitledWindow(
-                        "Variables:",
-                        self.variables_widget,
-                    ),
+                    self.variables_widget,
 
                     # Stack
-                    TitledWindow(
-                        "Stack:",
-                        self.stacktrace_widget,
-                    ),
+                    self.stacktrace_widget,
 
                     # Breakpoint
-                    TitledWindow(
-                        "Breakpoints:",
-                        self.breakpoint_widget,
-                    ),
+                    self.breakpoint_widget,
                 ],
                 width=40,
             ),
