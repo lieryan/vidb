@@ -109,6 +109,20 @@ class InitializeResponse(_Response):
     body: NotRequired[Capabilities]
 
 
+########################
+## Configuration Done ##
+########################
+
+class ConfigurationDoneRequest(_Request):
+    command: Literal["configurationDone"]
+
+    arguments: NotRequired[ConfigurationDoneArguments]
+
+
+class ConfigurationDoneArguments(TypedDict):
+    pass
+
+
 ##############
 ### Launch ###
 ##############
@@ -182,7 +196,7 @@ class Capabilities(TypedDict):
     # supportsSingleThreadExecutionRequests: NotRequired[bool]
 
 
-Request = InitializeRequest | LaunchRequest | AttachRequest
+Request = InitializeRequest | LaunchRequest | AttachRequest | ConfigurationDoneRequest
 UnvalidatedRequest = Request | _UnvalidatedRequest
 
 

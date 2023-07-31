@@ -8,6 +8,8 @@ from vidb.connection import DAPConnection
 from vidb.dap import (
     AttachRequest,
     AttachRequestArguments,
+    ConfigurationDoneRequest,
+    ConfigurationDoneArguments,
     InitializeRequest,
     InitializeRequestArguments,
     InitializeResponse,
@@ -57,9 +59,9 @@ def attach(client: DAPClient):
 
 
 def configuration_done(client: DAPClient):
-    arguments = dict()
+    arguments: ConfigurationDoneArguments = dict()
     return client.remote_call(
-        dict,
+        ConfigurationDoneRequest,
         "configurationDone",
         arguments,
     )
