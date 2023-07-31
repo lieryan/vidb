@@ -87,7 +87,7 @@ class TerminalWidget(Terminal):
         )
 
 
-class VariablesWindow(Window):
+class VariablesWidget(Window):
     def __init__(self):
         self.bindings = KeyBindings()
         super().__init__(
@@ -99,7 +99,7 @@ class VariablesWindow(Window):
         )
 
 
-class StacktraceWindow(Window):
+class StacktraceWidget(Window):
     def __init__(self):
         self.bindings = KeyBindings()
         super().__init__(
@@ -111,7 +111,7 @@ class StacktraceWindow(Window):
         )
 
 
-class BreakpointWindow(Window):
+class BreakpointWidget(Window):
     def __init__(self):
         self.bindings = KeyBindings()
         super().__init__(
@@ -129,9 +129,9 @@ class UI:
     def __init__(self):
         self.source_widget = SourceWidget()
         self.terminal_widget = TerminalWidget()
-        self.variables_widget = VariablesWindow()
-        self.stacktrace_widget = StacktraceWindow()
-        self.breakpoint_widget = BreakpointWindow()
+        self.variables_widget = VariablesWidget()
+        self.stacktrace_widget = StacktraceWidget()
+        self.breakpoint_widget = BreakpointWidget()
 
         self.global_bindings = KeyBindings()
         self._create_keybinds()
@@ -206,35 +206,35 @@ class UI:
             event.app.exit()
             self.terminal_widget.process.kill()
 
-        def focus_source_window(event):
+        def focus_source_widget(event):
             event.app.layout.focus(self.source_widget)
 
         @kb.add("V")
         @source_kb.add("right")
-        def focus_variable_window(event):
+        def focus_variable_widget(event):
             event.app.layout.focus(self.variables_widget)
 
         @kb.add("S")
-        def focus_stacktrace_window(event):
+        def focus_stacktrace_widget(event):
             event.app.layout.focus(self.stacktrace_widget)
 
         @kb.add("B")
-        def focus_breakpoint_window(event):
+        def focus_breakpoint_widget(event):
             event.app.layout.focus(self.breakpoint_widget)
 
         @kb.add("X")
         @kb.add("!")
-        def focus_terminal_window(event):
+        def focus_terminal_widget(event):
             event.app.layout.focus(self.terminal_widget)
 
-        variables_kb.add("left")(focus_source_window)
-        variables_kb.add("down")(focus_stacktrace_window)
-        variables_kb.add("up")(focus_breakpoint_window)
+        variables_kb.add("left")(focus_source_widget)
+        variables_kb.add("down")(focus_stacktrace_widget)
+        variables_kb.add("up")(focus_breakpoint_widget)
 
-        stacktrace_kb.add("left")(focus_source_window)
-        stacktrace_kb.add("up")(focus_variable_window)
-        stacktrace_kb.add("down")(focus_breakpoint_window)
+        stacktrace_kb.add("left")(focus_source_widget)
+        stacktrace_kb.add("up")(focus_variable_widget)
+        stacktrace_kb.add("down")(focus_breakpoint_widget)
 
-        breakpoint_kb.add("left")(focus_source_window)
-        breakpoint_kb.add("down")(focus_variable_window)
-        breakpoint_kb.add("up")(focus_stacktrace_window)
+        breakpoint_kb.add("left")(focus_source_widget)
+        breakpoint_kb.add("down")(focus_variable_widget)
+        breakpoint_kb.add("up")(focus_stacktrace_widget)
