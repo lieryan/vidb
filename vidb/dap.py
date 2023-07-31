@@ -152,6 +152,20 @@ class Capabilities(TypedDict):
 
 
 ##############
+### Attach ###
+##############
+
+
+class AttachRequest(_Request):
+    command: Literal["attach"]
+    arguments: AttachRequestArguments
+
+
+class AttachRequestArguments(TypedDict, total=False):
+    __restart: NotRequired[Any]
+
+
+##############
 ### Launch ###
 ##############
 
@@ -166,7 +180,7 @@ class LaunchRequestArguments(TypedDict):
     __restart: NotRequired[Any]
 
 
-Request = InitializeRequest | LaunchRequest
+Request = InitializeRequest | LaunchRequest | AttachRequest
 UnvalidatedRequest = Request | _UnvalidatedRequest
 
 

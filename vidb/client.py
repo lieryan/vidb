@@ -6,6 +6,8 @@ from typing import TypeVar
 
 from vidb.connection import DAPConnection
 from vidb.dap import (
+    AttachRequest,
+    AttachRequestArguments,
     InitializeRequest,
     InitializeRequestArguments,
     InitializeResponse,
@@ -46,9 +48,9 @@ async def initialize(client: DAPClient):
 
 
 def attach(client: DAPClient):
-    arguments = dict(arguments=[])
+    arguments: AttachRequestArguments = dict(arguments={})
     return client.remote_call(
-        dict,
+        AttachRequest,
         "attach",
         arguments,
     )
