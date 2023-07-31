@@ -52,11 +52,11 @@ def VSeparator():
 
 class SourceWidget(Window):
     def __init__(self):
-        self.bindings = KeyBindings()
+        self.key_bindings = KeyBindings()
         super().__init__(
             content=BufferControl(
                 lexer=PygmentsLexer(PythonLexer),
-                key_bindings=self.bindings,
+                key_bindings=self.key_bindings,
             ),
             left_margins=[
                 NumberedMargin(),
@@ -80,7 +80,7 @@ class SourceWidget(Window):
 
 class TerminalWidget(Terminal):
     def __init__(self):
-        self.bindings = KeyBindings()
+        self.key_bindings = KeyBindings()
         super().__init__(
             ["ipython"],
             height=10,
@@ -89,12 +89,12 @@ class TerminalWidget(Terminal):
 
 class VariablesWidget:
     def __init__(self):
-        self.bindings = KeyBindings()
+        self.key_bindings = KeyBindings()
         self.content = Window(
             content=FormattedTextControl(
                 text="Hello world",
                 focusable=True,
-                key_bindings=self.bindings,
+                key_bindings=self.key_bindings,
             ),
         )
 
@@ -107,12 +107,12 @@ class VariablesWidget:
 
 class StacktraceWidget:
     def __init__(self):
-        self.bindings = KeyBindings()
+        self.key_bindings = KeyBindings()
         self.content = Window(
             content=FormattedTextControl(
                 text="Hello world",
                 focusable=True,
-                key_bindings=self.bindings,
+                key_bindings=self.key_bindings,
             ),
         )
 
@@ -125,12 +125,12 @@ class StacktraceWidget:
 
 class BreakpointWidget:
     def __init__(self):
-        self.bindings = KeyBindings()
+        self.key_bindings = KeyBindings()
         self.content = Window(
             content=FormattedTextControl(
                 text="Hello world",
                 focusable=True,
-                key_bindings=self.bindings,
+                key_bindings=self.key_bindings,
             ),
         )
 
@@ -205,10 +205,10 @@ class UI:
 
     def _create_keybinds(self):
         kb = self.global_bindings
-        source_kb = self.source_widget.bindings
-        stacktrace_kb = self.stacktrace_widget.bindings
-        variables_kb = self.variables_widget.bindings
-        breakpoint_kb = self.breakpoint_widget.bindings
+        source_kb = self.source_widget.key_bindings
+        stacktrace_kb = self.stacktrace_widget.key_bindings
+        variables_kb = self.variables_widget.key_bindings
+        breakpoint_kb = self.breakpoint_widget.key_bindings
 
         @kb.add("q")
         def exit_(event):
