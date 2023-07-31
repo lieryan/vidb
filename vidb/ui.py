@@ -6,6 +6,7 @@ from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.document import Document
 from prompt_toolkit.enums import EditingMode
+from prompt_toolkit.filters.base import Never
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout.containers import VSplit, HSplit, Window
 from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
@@ -116,6 +117,7 @@ class GroupableRadioList:
 
     def __init__(self, values, *args, **kwargs):
         self.radio = RadioList(values=values, *args, **kwargs)
+        self.radio.window.dont_extend_height = Never()
         self.group = None
 
         kb = self.radio.control.key_bindings
