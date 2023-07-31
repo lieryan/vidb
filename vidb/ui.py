@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Optional
+
 from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.document import Document
@@ -8,6 +12,7 @@ from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.layout.margins import NumberedMargin
 from prompt_toolkit.lexers.pygments import PygmentsLexer
+from prompt_toolkit.widgets import RadioList
 from ptterm import Terminal
 from pygments.lexers.python import PythonLexer
 
@@ -87,58 +92,135 @@ class TerminalWidget(Terminal):
         )
 
 
-class VariablesWidget:
+class forward_property:
+    def __init__(self, attr_name):
+        self.attr_name = attr_name
+
+    def __get__(self, instance, cls):
+        return getattr(getattr(instance, self.attr_name), self.name)
+
+    def __set__(self, instance, value):
+        setattr(getattr(instance, self.attr_name), self.name, value)
+
+    def __set_name__(self, cls, name):
+        real_forward_property =  forward_property(attr_name=self.attr_name)
+        real_forward_property.name = name
+        setattr(cls, name, real_forward_property)
+
+
+class GroupableRadioList:
+    group: Optional[RadioListGroup]
+
+    values = _selected_index = current_value = forward_property("radio")
+
+    def __init__(self, values, *args, **kwargs):
+        self.radio = RadioList(values=values, *args, **kwargs)
+        self.group = None
+
+        kb = self.radio.control.key_bindings
+
+        @kb.add("up")
+        def _(event):
+            if self._selected_index - 1 >= 0:
+                self._selected_index -= 1
+            else:
+                self.on_hit_top(event)
+
+        @kb.add("down")
+        def _(event):
+            if self._selected_index + 1 < len(self.values):
+                self._selected_index += 1
+            else:
+                self.on_hit_bottom(event)
+
+    def on_hit_top(self, event):
+        if self.group and self.group.first_window is not event.app.layout.current_window:
+            event.app.layout.focus_previous()
+
+    def on_hit_bottom(self, event):
+        if self.group and self.group.last_window is not event.app.layout.current_window:
+            event.app.layout.focus_next()
+
+
+
+class VariablesWidget(GroupableRadioList):
     def __init__(self):
-        self.key_bindings = KeyBindings()
-        self.content = Window(
-            content=FormattedTextControl(
-                text="Hello world",
-                focusable=True,
-                key_bindings=self.key_bindings,
-            ),
+        super().__init__(
+            values=[
+                (None, "No variables"),
+                *[
+                    (x, f"Var {x}")
+                    for x in range(10)
+                ]
+            ],
         )
+        self.key_bindings = self.radio.control.key_bindings
 
     def __pt_container__(self):
         return TitledWindow(
             "Variables:",
-            self.content,
+            self.radio,
         )
 
 
-class StacktraceWidget:
+class StacktraceWidget(GroupableRadioList):
     def __init__(self):
-        self.key_bindings = KeyBindings()
-        self.content = Window(
-            content=FormattedTextControl(
-                text="Hello world",
-                focusable=True,
-                key_bindings=self.key_bindings,
-            ),
+        super().__init__(
+            values=[
+                (None, "No stacktrace"),
+                *[
+                    (x, f"Frame {x}")
+                    for x in range(10)
+                ]
+            ],
         )
+        self.key_bindings = self.radio.control.key_bindings
 
     def __pt_container__(self):
         return TitledWindow(
             "Stack:",
-            self.content,
+            self.radio,
         )
 
 
-class BreakpointWidget:
+class BreakpointWidget(GroupableRadioList):
     def __init__(self):
-        self.key_bindings = KeyBindings()
-        self.content = Window(
-            content=FormattedTextControl(
-                text="Hello world",
-                focusable=True,
-                key_bindings=self.key_bindings,
-            ),
+        super().__init__(
+            values=[
+                (None, "No breakpoints"),
+                *[
+                    (x, f"Breakpoint {x}")
+                    for x in range(10)
+                ]
+            ],
         )
+        self.key_bindings = self.radio.control.key_bindings
 
     def __pt_container__(self):
         return TitledWindow(
             "Breakpoints:",
-            self.content,
+            self.radio,
         )
+
+
+class RadioListGroup:
+    def __init__(self, split_cls, children, *args, **kwargs):
+        assert all(isinstance(c, GroupableRadioList) for c in children)
+        for c in children:
+            c.group = self
+        self.content = split_cls(children, *args, **kwargs)
+        self.children = children
+
+    @property
+    def first_window(self):
+        return self.children and self.children[0].radio.window
+
+    @property
+    def last_window(self):
+        return self.children and self.children[-1].radio.window
+
+    def __pt_container__(self):
+        return self.content
 
 
 class UI:
@@ -150,6 +232,15 @@ class UI:
         self.variables_widget = VariablesWidget()
         self.stacktrace_widget = StacktraceWidget()
         self.breakpoint_widget = BreakpointWidget()
+        self.right_sidebar = RadioListGroup(
+            HSplit,
+            [
+                self.variables_widget,
+                self.stacktrace_widget,
+                self.breakpoint_widget,
+            ],
+            width=40,
+        )
 
         self.global_bindings = KeyBindings()
         self._create_keybinds()
@@ -188,19 +279,7 @@ class UI:
 
             VSeparator(),
 
-            HSplit(
-                [
-                    # Variables
-                    self.variables_widget,
-
-                    # Stack
-                    self.stacktrace_widget,
-
-                    # Breakpoint
-                    self.breakpoint_widget,
-                ],
-                width=40,
-            ),
+            self.right_sidebar,
         ])
 
     def _create_keybinds(self):
@@ -237,13 +316,5 @@ class UI:
             event.app.layout.focus(self.terminal_widget)
 
         variables_kb.add("left")(focus_source_widget)
-        variables_kb.add("down")(focus_stacktrace_widget)
-        variables_kb.add("up")(focus_breakpoint_widget)
-
         stacktrace_kb.add("left")(focus_source_widget)
-        stacktrace_kb.add("up")(focus_variable_widget)
-        stacktrace_kb.add("down")(focus_breakpoint_widget)
-
         breakpoint_kb.add("left")(focus_source_widget)
-        breakpoint_kb.add("down")(focus_variable_widget)
-        breakpoint_kb.add("up")(focus_stacktrace_widget)
