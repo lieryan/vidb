@@ -71,9 +71,9 @@ class Message:
     # urlLabel: NotRequired[str]
 
 
-##################
-### Initialize ###
-##################
+################
+## Initialize ##
+################
 
 class InitializeRequest(_Request):
     command: Literal["initialize"]
@@ -123,22 +123,24 @@ class ConfigurationDoneArguments(TypedDict):
     pass
 
 
-##############
-### Launch ###
-##############
+############
+## Launch ##
+############
 
 class LaunchRequest(_Request):
     command: Literal["launch"]
     arguments: LaunchRequestArguments
 
 
-class LaunchRequestArguments(TypedDict, total=False):
+class LaunchRequestArguments(TypedDict):
     noDebug: NotRequired[bool]
 
     __restart: NotRequired[Any]
-##############
-### Attach ###
-##############
+
+
+############
+## Attach ##
+############
 
 
 class AttachRequest(_Request):
@@ -146,8 +148,25 @@ class AttachRequest(_Request):
     arguments: AttachRequestArguments
 
 
-class AttachRequestArguments(TypedDict, total=False):
+class AttachRequestArguments(TypedDict):
     __restart: NotRequired[Any]
+
+
+#############
+## Threads ##
+#############
+
+
+class ThreadsRequest(_Request):
+    command: Literal["threads"]
+
+
+class ThreadsResponse(_Response):
+    body: _ThreadsResponseBody
+
+
+class _ThreadsResponseBody(TypedDict):
+    threads: list[Thread]
 
 
 ###########
@@ -196,7 +215,12 @@ class Capabilities(TypedDict):
     # supportsSingleThreadExecutionRequests: NotRequired[bool]
 
 
-Request = InitializeRequest | LaunchRequest | AttachRequest | ConfigurationDoneRequest
+class Thread(TypedDict):
+    id: int
+    name: str
+
+
+Request = InitializeRequest | LaunchRequest | AttachRequest | ConfigurationDoneRequest | ThreadsRequest
 UnvalidatedRequest = Request | _UnvalidatedRequest
 
 

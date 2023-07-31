@@ -13,6 +13,7 @@ from vidb.dap import (
     InitializeRequest,
     InitializeRequestArguments,
     InitializeResponse,
+    ThreadsRequest,
     Request,
 )
 
@@ -37,7 +38,7 @@ async def initialize(client: DAPClient):
         supportsVariableType=True,
     )
 
-    response = await client.remote_call(
+    response: InitializeResponse = await client.remote_call(
         InitializeRequest,
         "initialize",
         arguments,
@@ -67,19 +68,17 @@ def configuration_done(client: DAPClient):
     )
 
 
-def set_breakpoints(client: DAPClient, path, breakpoints):
-    arguments = dict(
-        source=dict(
-            path=path,
-        ),
-        breakpoints=[{"line": bp} for bp in breakpoints],
+def threads(client: DAPClient):
+    d = client.prepare_request(
+        ThreadsRequest,
+        command="threads",
+        arguments=None,
     )
     return client.remote_call(
-        dict,
-        "setBreakpoints",
-        arguments,
+        ThreadsRequest,
+        "threads",
+        arguments=None,
     )
-
 
 
 class DAPClient:
