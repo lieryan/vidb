@@ -278,8 +278,8 @@ class UI:
 
         self.source_widget.source_file = open("vidb/ui.py")
 
-    def run(self):
-        self._ptk.run()
+    def run(self, *args, **kwargs):
+        return self._ptk.run_async(*args, **kwargs)
 
     def _create_layout(self):
         root_container = TitledWindow(
