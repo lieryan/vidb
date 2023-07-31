@@ -16,6 +16,8 @@ from prompt_toolkit.widgets import RadioList
 from ptterm import Terminal
 from pygments.lexers.python import PythonLexer
 
+from vidb.client import threads
+
 
 border_style = "fg:lightblue bg:darkred bold"
 
@@ -36,7 +38,6 @@ def TitledWindow(
         ),
         window,
     ])
-
 
 
 def HSeparator():
@@ -142,6 +143,25 @@ class GroupableRadioList:
             event.app.layout.focus_next()
 
 
+class ThreadsWidget(GroupableRadioList):
+    def __init__(self):
+        self.threads = []
+        super().__init__(values=[(None, "No threads")])
+
+    async def attach(self, client):
+        thread_list = await threads(client)
+        self.threads = thread_list["body"]["threads"]
+        self.values = [
+            (t["id"], f"{t['id']} - {t['name']}")
+            for t in self.threads
+        ]
+        self.current_value = self.values[0][0]
+
+    def __pt_container__(self):
+        return TitledWindow(
+            "Threads:",
+            self.radio
+        )
 
 class VariablesWidget(GroupableRadioList):
     def __init__(self):
@@ -229,12 +249,14 @@ class UI:
     def __init__(self):
         self.source_widget = SourceWidget()
         self.terminal_widget = TerminalWidget()
+        self.threads_widget = ThreadsWidget()
         self.variables_widget = VariablesWidget()
         self.stacktrace_widget = StacktraceWidget()
         self.breakpoint_widget = BreakpointWidget()
         self.right_sidebar = RadioListGroup(
             HSplit,
             [
+                self.threads_widget,
                 self.variables_widget,
                 self.stacktrace_widget,
                 self.breakpoint_widget,
@@ -288,6 +310,7 @@ class UI:
         stacktrace_kb = self.stacktrace_widget.key_bindings
         variables_kb = self.variables_widget.key_bindings
         breakpoint_kb = self.breakpoint_widget.key_bindings
+        threads_kb = self.threads_widget.radio.control.key_bindings
 
         @kb.add("q")
         def exit_(event):
@@ -297,8 +320,12 @@ class UI:
         def focus_source_widget(event):
             event.app.layout.focus(self.source_widget)
 
-        @kb.add("V")
+        @kb.add("T")
         @source_kb.add("right")
+        def focus_threads_widget(event):
+            event.app.layout.focus(self.threads_widget)
+
+        @kb.add("V")
         def focus_variable_widget(event):
             event.app.layout.focus(self.variables_widget)
 
@@ -315,6 +342,7 @@ class UI:
         def focus_terminal_widget(event):
             event.app.layout.focus(self.terminal_widget)
 
+        threads_kb.add("left")(focus_source_widget)
         variables_kb.add("left")(focus_source_widget)
         stacktrace_kb.add("left")(focus_source_widget)
         breakpoint_kb.add("left")(focus_source_widget)
