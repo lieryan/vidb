@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 
-from prompt_toolkit import Application
+from prompt_toolkit import HTML, Application
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.document import Document
 from prompt_toolkit.enums import EditingMode
@@ -14,11 +14,12 @@ from prompt_toolkit.layout.controls import BufferControl, FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.layout.margins import NumberedMargin
 from prompt_toolkit.lexers.pygments import PygmentsLexer
+from prompt_toolkit.styles import Style
 from prompt_toolkit.widgets import RadioList
 from ptterm import Terminal
 from pygments.lexers.python import PythonLexer
 
-from vidb.client import threads, stack_trace
+from vidb.client import stack_trace, threads
 
 
 border_style = "fg:lightblue bg:darkred bold"
@@ -188,20 +189,18 @@ class StacktraceWidget(GroupableRadioList):
     async def attach(self, client):
         stack_trace_list = await stack_trace(client, thread_id=1)
         self.frames = stack_trace_list["stackFrames"]
-        self.values = [self._render_frame_to_radiolist_text(f) for f in self.frames]
+        self.values = [
+            (frame["id"], self._render_frame_to_radiolist_text(frame)) for frame in self.frames
+        ]
         self.current_value = self.values[0][0]
 
-    def _render_frame_to_radiolist_text(self, f):
+    def _render_frame_to_radiolist_text(self, frame):
         def short_path(path: str):
             return Path(path).name
 
-        return (
-            f["id"],
-            [
-                ("fg:lightblue", f"{f['name']}"),
-                ("", f" "),
-                ("fg:red", f"{short_path(f['source']['path'])}:{f['line']}:{f['column']}"),
-            ],
+        return HTML("<frame-name>{name}</frame-name> <frame-filepath>{file_name}:{line}:{column}</frame-filepath>").format(
+            **frame,
+            file_name=short_path(frame['source']['path']),
         )
 
     def __pt_container__(self):
@@ -277,6 +276,9 @@ class UI:
             full_screen=True,
             mouse_support=True,
             editing_mode=EditingMode.VI,
+            style=Style.from_dict(
+                {"frame-name": "fg:lightblue", "frame-filepath": "fg:red"},
+            ),
         )
 
         self.source_widget.source_file = open("vidb/ui.py")

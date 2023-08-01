@@ -1,8 +1,12 @@
 import asyncio
 
+from prompt_toolkit import HTML
+from prompt_toolkit.formatted_text import to_formatted_text
+
 from tests.stubs import DAPServerMixin
 from vidb.client import stack_trace
 from vidb.ui import StacktraceWidget
+
 
 BOTTOM_MOST_FRAME_ID = 3
 STACK_TRACE_RESPONSE = {
@@ -64,24 +68,15 @@ class TestStacktrace(DAPServerMixin):
     async def test_render_frame_to_radiolist_text(self, client):
         widget = StacktraceWidget()
 
-        frame0 = STACK_TRACE_RESPONSE["body"]["stackFrames"][0]
-        expected0 = (
-            3,
-            [
-                ("fg:lightblue", "select"),
-                ("", " "),
-                ("fg:red", "selectors.py:469:1"),
-            ],
+        self.assert_formatted_text(
+            widget._render_frame_to_radiolist_text(STACK_TRACE_RESPONSE["body"]["stackFrames"][0]),
+            '<frame-name>select</frame-name> <frame-filepath>selectors.py:469:1</frame-filepath>',
         )
-        assert widget._render_frame_to_radiolist_text(frame0) == expected0
 
-        frame1 = STACK_TRACE_RESPONSE["body"]["stackFrames"][1]
-        expected1 = (
-            2,
-            [
-                ("fg:lightblue", "<module>"),
-                ("", " "),
-                ("fg:red", "testscript.py:29:1"),
-            ],
+        self.assert_formatted_text(
+            widget._render_frame_to_radiolist_text(STACK_TRACE_RESPONSE["body"]["stackFrames"][1]),
+            '<frame-name>&lt;module&gt;</frame-name> <frame-filepath>testscript.py:29:1</frame-filepath>',
         )
-        assert widget._render_frame_to_radiolist_text(frame1) == expected1
+
+    def assert_formatted_text(self, formatted0, expected):
+        assert to_formatted_text(formatted0) == to_formatted_text(HTML(expected))
