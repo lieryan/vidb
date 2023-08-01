@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Optional
+from pathlib import Path
 
 from prompt_toolkit import Application
 from prompt_toolkit.buffer import Buffer
@@ -17,7 +18,7 @@ from prompt_toolkit.widgets import RadioList
 from ptterm import Terminal
 from pygments.lexers.python import PythonLexer
 
-from vidb.client import threads
+from vidb.client import threads, stack_trace
 
 
 border_style = "fg:lightblue bg:darkred bold"
@@ -147,8 +148,8 @@ class GroupableRadioList:
 
 class ThreadsWidget(GroupableRadioList):
     def __init__(self):
-        self.threads = []
         super().__init__(values=[(None, "No threads")])
+        self.threads = []
 
     async def attach(self, client):
         thread_list = await threads(client)
@@ -187,16 +188,24 @@ class VariablesWidget(GroupableRadioList):
 
 class StacktraceWidget(GroupableRadioList):
     def __init__(self):
-        super().__init__(
-            values=[
-                (None, "No stacktrace"),
-                *[
-                    (x, f"Frame {x}")
-                    for x in range(10)
-                ]
-            ],
-        )
+        super().__init__(values=[(None, "No stacktrace")])
         self.key_bindings = self.radio.control.key_bindings
+
+    async def attach(self, client):
+        def short_path(path: str):
+            return Path(path).name
+
+        stack_trace_list = await stack_trace(client, thread_id=1)
+        self.frames = stack_trace_list["body"]["stackFrames"]
+        self.values = [
+            (f["id"], [
+                ("fg:lightblue", f"{f['name']}"),
+                ("", f" "),
+                ("fg:red", f"{short_path(f['source']['path'])}:{f['line']}:{f['column']}"),
+            ])
+            for f in self.frames
+        ]
+        self.current_value = self.values[0][0]
 
     def __pt_container__(self):
         return TitledWindow(

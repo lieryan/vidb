@@ -15,6 +15,8 @@ from vidb.dap import (
     InitializeResponse,
     ThreadsRequest,
     Request,
+    StackTraceArguments,
+    StackTraceRequest,
 )
 
 
@@ -31,7 +33,6 @@ async def initialize(client: DAPClient):
         clientName="vidb",
         adapterID="vidb",
         locale="en-US",
-
         linesStartAt1=True,
         columnsStartAt1=True,
         pathFormat="path",
@@ -69,15 +70,21 @@ def configuration_done(client: DAPClient):
 
 
 def threads(client: DAPClient):
-    d = client.prepare_request(
-        ThreadsRequest,
-        command="threads",
-        arguments=None,
-    )
     return client.remote_call(
         ThreadsRequest,
         "threads",
         arguments=None,
+    )
+
+
+def stack_trace(client: DAPClient, *, thread_id: int):
+    arguments: StackTraceArguments = dict(
+        threadId=thread_id,
+    )
+    return client.remote_call(
+        StackTraceRequest,
+        "stackTrace",
+        arguments=arguments,
     )
 
 

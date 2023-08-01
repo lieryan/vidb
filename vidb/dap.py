@@ -169,6 +169,34 @@ class _ThreadsResponseBody(TypedDict):
     threads: list[Thread]
 
 
+################
+## StackTrace ##
+################
+
+
+class StackTraceRequest(_Request):
+    command: Literal["stackTrace"]
+
+    arguments: StackTraceArguments
+
+
+class StackTraceArguments(TypedDict):
+    threadId: int
+
+    # startFrame: NotRequired[int]
+    # levels: NotRequired[int]
+    # format: NotRequired[StackFrameFormat]  # requires supportsValueFormattingOptions
+
+
+class StackTraceResponse(_Response):
+    body: _ThreadsResponseBody
+
+
+class _StackTraceResponseBody(TypedDict):
+    stackFrames: list[StackFrame]
+    # totalFrames: NotRequired[int]
+
+
 ###########
 ## Types ##
 ###########
@@ -220,7 +248,34 @@ class Thread(TypedDict):
     name: str
 
 
-Request = InitializeRequest | LaunchRequest | AttachRequest | ConfigurationDoneRequest | ThreadsRequest
+class Source(TypedDict):
+    name: NotRequired[str]
+    path: NotRequired[str]
+    # sourceReference: NotRequired[int]
+    # presentationHint: NotRequired[Literal['normal', 'emphasize', 'deemphasize']]
+    # origin: NotRequired[str]
+    # sources: NotRequired[list[Source]]
+    # adapterData: NotRequired[Any]
+    # checksums: NotRequired[list[Checksum]]
+
+
+class StackFrame(TypedDict):
+    id: int
+    name: str
+
+    # source: NotRequired[Source]
+    # line: int
+    # column: int
+    # endLine: NotRequired[int]
+    # endColumn: NotRequired[int]
+
+    # canRestart: NotRequired[bool]  # requires supportsRestartRequest
+    # instructionPointerReference: NotRequired[str]
+    # moduleId: NotRequired[int | str]
+    # presentationHint: NotRequired[Literal['normal', 'label', 'subtle']]
+
+
+Request = InitializeRequest | LaunchRequest | AttachRequest | ConfigurationDoneRequest | ThreadsRequest | StackTraceRequest
 UnvalidatedRequest = Request | _UnvalidatedRequest
 
 
