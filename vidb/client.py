@@ -45,8 +45,9 @@ async def initialize(client: DAPClient):
         arguments,
     )
 
-    client.server_support.configuration_done_request = \
-        response["body"]["supportsConfigurationDoneRequest"]
+    client.server_support.configuration_done_request = response["body"][
+        "supportsConfigurationDoneRequest"
+    ]
 
     return response
 
@@ -100,9 +101,11 @@ class DAPClient:
     def wait_for_event(self, event_name):
         event = asyncio.Event()
         self.add_event_listener(event_name, event.set)
+
         async def _waiter():
             await event.wait()
             self.remove_event_listener(event_name, event.set)
+
         return _waiter()
 
     def add_event_listener(self, event_name, listener):

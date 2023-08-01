@@ -11,7 +11,8 @@ from typing_extensions import NotRequired
 
 
 class _ProtocolMessage(TypedDict):
-    """ Base class of requests, responses, and events. """
+    """Base class of requests, responses, and events."""
+
     seq: int
 
 
@@ -20,7 +21,8 @@ class _UnvalidatedProtocolMessage(_ProtocolMessage):
 
 
 class _Request(_ProtocolMessage):
-    """ A client or debug adapter initiated request. """
+    """A client or debug adapter initiated request."""
+
     type: Literal["request"]
 
 
@@ -51,17 +53,20 @@ class _Response(_ProtocolMessage):
 
 
 class Response(_Response):
-    """ Response for a request. """
+    """Response for a request."""
+
     body: NotRequired[Any]
 
 
 class ErrorResponse(_Response):
-    """ On error (whenever success is false), the body can provide more details. """
+    """On error (whenever success is false), the body can provide more details."""
+
     body: NotRequired[Message]
 
 
 class Message:
-    """ A structured message object. Used to return errors from requests. """
+    """A structured message object. Used to return errors from requests."""
+
     id: str
     format: str
     # variables: NotRequired[...]
@@ -74,6 +79,7 @@ class Message:
 ################
 ## Initialize ##
 ################
+
 
 class InitializeRequest(_Request):
     command: Literal["initialize"]
@@ -113,6 +119,7 @@ class InitializeResponse(_Response):
 ## Configuration Done ##
 ########################
 
+
 class ConfigurationDoneRequest(_Request):
     command: Literal["configurationDone"]
 
@@ -126,6 +133,7 @@ class ConfigurationDoneArguments(TypedDict):
 ############
 ## Launch ##
 ############
+
 
 class LaunchRequest(_Request):
     command: Literal["launch"]
@@ -201,6 +209,7 @@ class _StackTraceResponseBody(TypedDict):
 ## Types ##
 ###########
 
+
 class Capabilities(TypedDict):
     supportsConfigurationDoneRequest: NotRequired[bool]
     # supportsFunctionBreakpoints: NotRequired[bool]
@@ -275,7 +284,14 @@ class StackFrame(TypedDict):
     # presentationHint: NotRequired[Literal['normal', 'label', 'subtle']]
 
 
-Request = InitializeRequest | LaunchRequest | AttachRequest | ConfigurationDoneRequest | ThreadsRequest | StackTraceRequest
+Request = (
+    InitializeRequest
+    | LaunchRequest
+    | AttachRequest
+    | ConfigurationDoneRequest
+    | ThreadsRequest
+    | StackTraceRequest
+)
 UnvalidatedRequest = Request | _UnvalidatedRequest
 
 

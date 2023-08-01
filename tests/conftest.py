@@ -85,16 +85,19 @@ def create_reader_message_pipe(create_reader_pipe):
 def server_sequence():
     return count(1)
 
+
 @fixture
 async def bidirectional_pipe(pipe_connection_factory):
     reader, server_writer = await pipe_connection_factory()
     server_reader, writer = await pipe_connection_factory()
     return reader, server_writer, server_reader, writer
 
+
 @fixture
 def server_connection(bidirectional_pipe):
     reader, server_writer, server_reader, writer = bidirectional_pipe
     return DAPServerConnection(server_reader, server_writer)
+
 
 @fixture
 async def client(server_sequence, server_connection, bidirectional_pipe):

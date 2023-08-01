@@ -14,9 +14,7 @@ class TestRemoteCall(DAPServerMixin):
                 "command": "helloworld",
                 "request_seq": 1,
             }
-            async with self.assert_request_response(
-                "helloworld", response=RESPONSE,
-            ):
+            async with self.assert_request_response("helloworld", response=RESPONSE):
                 pass
 
         await asyncio.gather(
@@ -40,9 +38,7 @@ class TestRemoteCall(DAPServerMixin):
                 "request_seq": 1,
                 "message": "exception message from server",
             }
-            async with self.assert_request_response(
-                "helloworld", response=RESPONSE,
-            ):
+            async with self.assert_request_response("helloworld", response=RESPONSE):
                 pass
 
         asyncio.create_task(server())

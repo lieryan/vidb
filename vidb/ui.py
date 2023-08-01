@@ -28,24 +28,26 @@ def TitledWindow(
     title,
     window,
     *,
-    title_style: str=border_style,
+    title_style: str = border_style,
 ):
-    return HSplit([
-        Window(
-            content=FormattedTextControl(
-                text=title,
+    return HSplit(
+        [
+            Window(
+                content=FormattedTextControl(
+                    text=title,
+                ),
+                height=1,
+                style=title_style,
             ),
-            height=1,
-            style=title_style,
-        ),
-        window,
-    ])
+            window,
+        ]
+    )
 
 
 def HSeparator():
     return Window(
         height=1,
-        char=' ',
+        char=" ",
         style=border_style,
     )
 
@@ -53,7 +55,7 @@ def HSeparator():
 def VSeparator():
     return Window(
         width=1,
-        char=' ',
+        char=" ",
         style=border_style,
     )
 
@@ -106,7 +108,7 @@ class forward_property:
         setattr(getattr(instance, self.attr_name), self.name, value)
 
     def __set_name__(self, cls, name):
-        real_forward_property =  forward_property(attr_name=self.attr_name)
+        real_forward_property = forward_property(attr_name=self.attr_name)
         real_forward_property.name = name
         setattr(cls, name, real_forward_property)
 
@@ -154,28 +156,20 @@ class ThreadsWidget(GroupableRadioList):
     async def attach(self, client):
         thread_list = await threads(client)
         self.threads = thread_list["body"]["threads"]
-        self.values = [
-            (t["id"], f"{t['id']} - {t['name']}")
-            for t in self.threads
-        ]
+        self.values = [(t["id"], f"{t['id']} - {t['name']}") for t in self.threads]
         self.current_value = self.values[0][0]
 
     def __pt_container__(self):
         return TitledWindow(
             "Threads:",
-            self.radio
+            self.radio,
         )
+
 
 class VariablesWidget(GroupableRadioList):
     def __init__(self):
         super().__init__(
-            values=[
-                (None, "No variables"),
-                *[
-                    (x, f"Var {x}")
-                    for x in range(10)
-                ]
-            ],
+            values=[(None, "No variables"), *[(x, f"Var {x}") for x in range(10)]],
         )
         self.key_bindings = self.radio.control.key_bindings
 
@@ -198,11 +192,14 @@ class StacktraceWidget(GroupableRadioList):
         stack_trace_list = await stack_trace(client, thread_id=1)
         self.frames = stack_trace_list["body"]["stackFrames"]
         self.values = [
-            (f["id"], [
-                ("fg:lightblue", f"{f['name']}"),
-                ("", f" "),
-                ("fg:red", f"{short_path(f['source']['path'])}:{f['line']}:{f['column']}"),
-            ])
+            (
+                f["id"],
+                [
+                    ("fg:lightblue", f"{f['name']}"),
+                    ("", f" "),
+                    ("fg:red", f"{short_path(f['source']['path'])}:{f['line']}:{f['column']}"),
+                ],
+            )
             for f in self.frames
         ]
         self.current_value = self.values[0][0]
@@ -219,10 +216,7 @@ class BreakpointWidget(GroupableRadioList):
         super().__init__(
             values=[
                 (None, "No breakpoints"),
-                *[
-                    (x, f"Breakpoint {x}")
-                    for x in range(10)
-                ]
+                *[(x, f"Breakpoint {x}") for x in range(10)],
             ],
         )
         self.key_bindings = self.radio.control.key_bindings
@@ -299,21 +293,21 @@ class UI:
         return Layout(root_container)
 
     def _create_main_container(self):
-        return VSplit([
-            HSplit([
-                # Source code buffer
-                self.source_widget,
-
-                HSeparator(),
-
-                # Shell buffer
-                self.terminal_widget,
-            ]),
-
-            VSeparator(),
-
-            self.right_sidebar,
-        ])
+        return VSplit(
+            [
+                HSplit(
+                    [
+                        # Source code buffer
+                        self.source_widget,
+                        HSeparator(),
+                        # Shell buffer
+                        self.terminal_widget,
+                    ]
+                ),
+                VSeparator(),
+                self.right_sidebar,
+            ]
+        )
 
     def _create_keybinds(self):
         kb = self.global_bindings

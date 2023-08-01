@@ -78,19 +78,15 @@ ATTACH_RESPONSE = {
 class TestInitialize(DAPServerMixin):
     async def test_attach_initialize_sequence(self, client):
         async def server_initialize():
-            async with self.assert_request_response(
-                "initialize", response=INITIALIZE_RESPONSE
-            ) as initialize_request:
+            async with self.assert_request_response("initialize", response=INITIALIZE_RESPONSE):
                 pass
 
-            async with self.assert_request_response(
-                "attach", response=ATTACH_RESPONSE
-            ) as attach_request:
+            async with self.assert_request_response("attach", response=ATTACH_RESPONSE):
                 self.send_message(INITIALIZED_EVENT)
 
                 async with self.assert_request_response(
                     "configurationDone", response=CONFIGURATION_DONE_RESPONSE
-                ) as configuration_done_request:
+                ):
                     pass
 
         await asyncio.gather(
