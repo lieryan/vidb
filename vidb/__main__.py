@@ -17,6 +17,7 @@ async def main():
     await client.initialize()
 
     await app.threads_widget.attach(client)
+    await app.stacktrace_widget.attach(client)
 
     use_asyncio_event_loop()
     await app.run()

@@ -190,7 +190,7 @@ class StacktraceWidget(GroupableRadioList):
             return Path(path).name
 
         stack_trace_list = await stack_trace(client, thread_id=1)
-        self.frames = stack_trace_list["body"]["stackFrames"]
+        self.frames = stack_trace_list["stackFrames"]
         self.values = [
             (
                 f["id"],
