@@ -45,7 +45,7 @@ async def initialize(client: DAPClient):
         arguments,
     )
 
-    client.server_support.configuration_done_request = response["body"][
+    client.server_support.configuration_done_request = response[
         "supportsConfigurationDoneRequest"
     ]
 
@@ -139,7 +139,7 @@ class DAPClient:
             assert response["command"] == command
             assert request["seq"] == response["request_seq"]
             if response["success"]:
-                return response
+                return response.get("body", None)
             else:
                 response = dict(response)
                 del response["seq"]
