@@ -186,23 +186,23 @@ class StacktraceWidget(GroupableRadioList):
         self.key_bindings = self.radio.control.key_bindings
 
     async def attach(self, client):
+        stack_trace_list = await stack_trace(client, thread_id=1)
+        self.frames = stack_trace_list["stackFrames"]
+        self.values = [self._render_frame_to_radiolist_text(f) for f in self.frames]
+        self.current_value = self.values[0][0]
+
+    def _render_frame_to_radiolist_text(self, f):
         def short_path(path: str):
             return Path(path).name
 
-        stack_trace_list = await stack_trace(client, thread_id=1)
-        self.frames = stack_trace_list["stackFrames"]
-        self.values = [
-            (
-                f["id"],
-                [
-                    ("fg:lightblue", f"{f['name']}"),
-                    ("", f" "),
-                    ("fg:red", f"{short_path(f['source']['path'])}:{f['line']}:{f['column']}"),
-                ],
-            )
-            for f in self.frames
-        ]
-        self.current_value = self.values[0][0]
+        return (
+            f["id"],
+            [
+                ("fg:lightblue", f"{f['name']}"),
+                ("", f" "),
+                ("fg:red", f"{short_path(f['source']['path'])}:{f['line']}:{f['column']}"),
+            ],
+        )
 
     def __pt_container__(self):
         return TitledWindow(

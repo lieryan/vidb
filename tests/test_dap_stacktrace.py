@@ -2,7 +2,9 @@ import asyncio
 
 from tests.stubs import DAPServerMixin
 from vidb.client import stack_trace
+from vidb.ui import StacktraceWidget
 
+BOTTOM_MOST_FRAME_ID = 3
 STACK_TRACE_RESPONSE = {
     "seq": 1,
     "type": "response",
@@ -12,7 +14,7 @@ STACK_TRACE_RESPONSE = {
     "body": {
         "stackFrames": [
             {
-                "id": 3,
+                "id": BOTTOM_MOST_FRAME_ID,
                 "name": "select",
                 "line": 469,
                 "column": 1,
@@ -58,3 +60,28 @@ class TestStacktrace(DAPServerMixin):
             server_stack_trace(),
             stack_trace(client, thread_id=1),
         )
+
+    async def test_render_frame_to_radiolist_text(self, client):
+        widget = StacktraceWidget()
+
+        frame0 = STACK_TRACE_RESPONSE["body"]["stackFrames"][0]
+        expected0 = (
+            3,
+            [
+                ("fg:lightblue", "select"),
+                ("", " "),
+                ("fg:red", "selectors.py:469:1"),
+            ],
+        )
+        assert widget._render_frame_to_radiolist_text(frame0) == expected0
+
+        frame1 = STACK_TRACE_RESPONSE["body"]["stackFrames"][1]
+        expected1 = (
+            2,
+            [
+                ("fg:lightblue", "<module>"),
+                ("", " "),
+                ("fg:red", "testscript.py:29:1"),
+            ],
+        )
+        assert widget._render_frame_to_radiolist_text(frame1) == expected1
