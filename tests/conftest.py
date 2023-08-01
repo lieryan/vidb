@@ -1,8 +1,14 @@
 import asyncio
 import json
 import os
+from itertools import count
 
 import pytest
+from pytest import fixture
+
+from tests.stubs import DAPServerConnection
+from vidb.client import DAPClient
+from vidb.connection import DAPConnection
 
 
 async def create_pipe_connection():
@@ -73,3 +79,28 @@ def create_reader_message_pipe(create_reader_pipe):
         return create_reader_pipe(b"".join(chunks))
 
     return _factory
+
+
+@fixture
+def server_sequence():
+    return count(1)
+
+@fixture
+async def bidirectional_pipe(pipe_connection_factory):
+    reader, server_writer = await pipe_connection_factory()
+    server_reader, writer = await pipe_connection_factory()
+    return reader, server_writer, server_reader, writer
+
+@fixture
+def server_connection(bidirectional_pipe):
+    reader, server_writer, server_reader, writer = bidirectional_pipe
+    return DAPServerConnection(server_reader, server_writer)
+
+@fixture
+async def client(server_sequence, server_connection, bidirectional_pipe):
+    reader, server_writer, server_reader, writer = bidirectional_pipe
+
+    connection = DAPConnection(reader, writer)
+    client = DAPClient(connection=connection)
+    connection.start_listening()
+    return client
