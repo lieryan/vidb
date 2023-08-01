@@ -129,13 +129,30 @@ class DAPClient:
             await configuration_done(self)
         await attach_response
 
-    def remote_call(self, request_cls, command, arguments):
+    def remote_call(self, request_cls: type[Request], command: str, arguments):
+        async def _return_or_raise(future_response):
+            response = await future_response
+            assert response["type"] == "response"
+            assert response["command"] == command
+            assert request["seq"] == response["request_seq"]
+            if response["success"]:
+                return response
+            else:
+                response = dict(response)
+                del response["seq"]
+                del response["type"]
+                del response["request_seq"]
+                del response["success"]
+                del response["command"]
+                message = response.pop("message")
+                raise Exception(message + (str(response) if response else ""))
+
         request = self.prepare_request(
             request_cls,
             command,
             arguments,
         )
-        return self.connection.send_message(request)
+        return _return_or_raise(self.connection.send_message(request))
 
     def prepare_request(
         self,
