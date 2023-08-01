@@ -89,12 +89,13 @@ def stack_trace(client: DAPClient, *, thread_id: int):
 
 
 class DAPClient:
-    sequence = count(1)
+    sequence: count
     connection: DAPConnection
 
     def __init__(self, connection):
         self.connection = connection
         self.server_support = SupportFlags()
+        self.sequence = count(1)
 
     def wait_for_event(self, event_name):
         event = asyncio.Event()
