@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
+from asyncio.locks import Condition
 from typing import Optional
+from contextlib import asynccontextmanager
 
 from prompt_toolkit import HTML, Application
 from prompt_toolkit.buffer import Buffer
@@ -139,11 +142,21 @@ class RadioListWithWatchableCurrentValue(RadioList):
         self._current_value = new_value
         create_background_task(notify())
 
+    @asynccontextmanager
+    async def watch(self):
+        """ watch current value """
+        async def _waiter():
+            await self._watch_current_value.wait()
+            return self.current_value
+
+        async with self._watch_current_value:
+            yield _waiter
+
 
 class GroupableRadioList:
     group: Optional[RadioListGroup]
 
-    values = _selected_index = current_value = forward_property("radio")
+    values = _selected_index = current_value = watch = forward_property("radio")
 
     def __init__(self, values, *args, **kwargs):
         self.radio = RadioListWithWatchableCurrentValue(values=values, *args, **kwargs)
@@ -212,13 +225,16 @@ class StacktraceWidget(GroupableRadioList):
         super().__init__(values=[(None, "No stacktrace")])
         self.key_bindings = self.radio.control.key_bindings
 
-    async def attach(self, client):
-        stack_trace_list = await stack_trace(client, thread_id=1)
-        self.frames = stack_trace_list["stackFrames"]
-        self.values = [
-            (frame["id"], self._render_frame_to_radiolist_text(frame)) for frame in self.frames
-        ]
-        self.current_value = self.values[0][0]
+    async def attach(self, client, threads_widget):
+        async with threads_widget.watch() as on_current_thread_changed:
+            thread_id = await on_current_thread_changed()
+
+            stack_trace_list = await stack_trace(client, thread_id=thread_id)
+            self.frames = stack_trace_list["stackFrames"]
+            self.values = [
+                (frame["id"], self._render_frame_to_radiolist_text(frame)) for frame in self.frames
+            ]
+            self.current_value = self.values[0][0]
 
     def _render_frame_to_radiolist_text(self, frame):
         def short_path(path: str):
