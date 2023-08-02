@@ -24,7 +24,7 @@ async def initial_load(client, app):
     await client.initialize()
 
     await app.threads_widget.attach(client)
-    await app.stacktrace_widget.attach(client)
+    await app.stacktrace_widget.attach(client, app, app.threads_widget)
     app.invalidate()
 
 

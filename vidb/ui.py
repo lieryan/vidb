@@ -225,16 +225,18 @@ class StacktraceWidget(GroupableRadioList):
         super().__init__(values=[(None, "No stacktrace")])
         self.key_bindings = self.radio.control.key_bindings
 
-    async def attach(self, client, threads_widget):
+    async def attach(self, client, app, threads_widget):
         async with threads_widget.watch() as on_current_thread_changed:
-            thread_id = await on_current_thread_changed()
+            while True:
+                thread_id = await on_current_thread_changed()
 
-            stack_trace_list = await stack_trace(client, thread_id=thread_id)
-            self.frames = stack_trace_list["stackFrames"]
-            self.values = [
-                (frame["id"], self._render_frame_to_radiolist_text(frame)) for frame in self.frames
-            ]
-            self.current_value = self.values[0][0]
+                stack_trace_list = await stack_trace(client, thread_id=thread_id)
+                self.frames = stack_trace_list["stackFrames"]
+                self.values = [
+                    (frame["id"], self._render_frame_to_radiolist_text(frame)) for frame in self.frames
+                ]
+                self.current_value = self.values[0][0]
+                app.invalidate()
 
     def _render_frame_to_radiolist_text(self, frame):
         def short_path(path: str):
