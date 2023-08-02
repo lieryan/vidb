@@ -114,13 +114,31 @@ class forward_property:
         setattr(cls, name, real_forward_property)
 
 
+class RadioListWithWatchableCurrentValue(RadioList):
+    def __init__(self, values, *args, **kwargs):
+        self._watch_current_value = Condition()
+        super().__init__(values, *args, **kwargs)
+
+    @property
+    def current_value(self):
+        return self._current_value
+
+    @current_value.setter
+    def current_value(self, new_value):
+        async def notify():
+            async with self._watch_current_value:
+                self._watch_current_value.notify_all()
+        self._current_value = new_value
+        asyncio.create_task(notify())
+
+
 class GroupableRadioList:
     group: Optional[RadioListGroup]
 
     values = _selected_index = current_value = forward_property("radio")
 
     def __init__(self, values, *args, **kwargs):
-        self.radio = RadioList(values=values, *args, **kwargs)
+        self.radio = RadioListWithWatchableCurrentValue(values=values, *args, **kwargs)
         self.radio.window.dont_extend_height = Never()
         self.group = None
 
