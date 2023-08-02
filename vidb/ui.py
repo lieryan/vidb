@@ -283,6 +283,9 @@ class UI:
 
         self.source_widget.source_file = open("vidb/ui.py")
 
+    def invalidate(self):
+        self._ptk.invalidate()
+
     def run(self, *args, **kwargs):
         return self._ptk.run_async(*args, **kwargs)
 

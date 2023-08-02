@@ -25,7 +25,7 @@ async def initial_load(client, app):
 
     await app.threads_widget.attach(client)
     await app.stacktrace_widget.attach(client)
-    app._ptk.invalidate()
+    app.invalidate()
 
 
 asyncio.run(main())
