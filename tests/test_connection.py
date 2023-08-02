@@ -106,6 +106,6 @@ class TestConnection:
 
         DAPConnection.write_message(reader_writer, response_message)
 
-        asyncio.create_task(connection.handle_messages())
+        connection.start_listening()
         response = await connection.request(request_message)
         assert response == response_message

@@ -14,7 +14,7 @@ async def main():
     portnum = sys.argv[1]
     connection = await DAPConnection.from_tcp("localhost", portnum)
     client = DAPClient(connection=connection)
-    asyncio.create_task(initial_load(client, app))
+    initial_load_task = asyncio.create_task(initial_load(client, app))
 
     use_asyncio_event_loop()
     await app.run()

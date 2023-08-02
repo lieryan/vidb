@@ -83,7 +83,7 @@ class DAPConnection(BaseDAPConnection):
         return conn
 
     def start_listening(self):
-        asyncio.create_task(self.handle_messages())
+        self.__listener = asyncio.create_task(self.handle_messages())
 
     async def request(self, request: Request) -> Response:
         future_response: asyncio.Future = self.send_message(request)

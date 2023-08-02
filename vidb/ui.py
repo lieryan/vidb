@@ -24,6 +24,14 @@ from vidb.client import stack_trace, threads
 
 border_style = "fg:lightblue bg:darkred bold"
 
+background_tasks = set()
+
+def create_background_task(coro):
+    """ create a reliable background task by keeping strong reference to the task """
+    task = asyncio.create_task(coro)
+    background_tasks.add(task)
+    task.add_done_callback(background_tasks.discard)
+
 
 def TitledWindow(
     title,
@@ -129,7 +137,7 @@ class RadioListWithWatchableCurrentValue(RadioList):
             async with self._watch_current_value:
                 self._watch_current_value.notify_all()
         self._current_value = new_value
-        asyncio.create_task(notify())
+        create_background_task(notify())
 
 
 class GroupableRadioList:

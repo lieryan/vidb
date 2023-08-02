@@ -41,7 +41,7 @@ class TestRemoteCall(DAPServerMixin):
             async with self.assert_request_response("helloworld", response=RESPONSE):
                 pass
 
-        asyncio.create_task(server())
+        server_task = asyncio.create_task(server())
         with pytest.raises(Exception, match="exception message from server"):
             await client.remote_call(
                 dict,
