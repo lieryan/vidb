@@ -100,11 +100,12 @@ class DAPClient:
 
     def wait_for_event(self, event_name):
         event = asyncio.Event()
-        self.add_event_listener(event_name, event.set)
+        listener = lambda e: event.set()
+        self.add_event_listener(event_name, listener)
 
         async def _waiter():
             await event.wait()
-            self.remove_event_listener(event_name, event.set)
+            self.remove_event_listener(event_name, listener)
 
         return _waiter()
 

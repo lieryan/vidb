@@ -35,9 +35,9 @@ class Dispatcher:
         return future_response
 
     def handle_event(self, message: Event):
-        handlers = self.events.get(message["event"], {})
-        for handler in handlers:
-            handler()
+        listeners = self.events.get(message["event"], {})
+        for listener in listeners:
+            listener(message)
 
 
 class BaseDAPConnection:
