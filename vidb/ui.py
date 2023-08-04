@@ -7,6 +7,7 @@ from typing import Optional
 from contextlib import asynccontextmanager
 
 from prompt_toolkit import HTML, Application
+from prompt_toolkit.application import get_app
 from prompt_toolkit.buffer import Buffer
 from prompt_toolkit.document import Document
 from prompt_toolkit.enums import EditingMode
@@ -226,10 +227,10 @@ class StacktraceWidget(GroupableRadioList):
         super().__init__(values=[(None, "No stacktrace")])
         self.key_bindings = self.radio.control.key_bindings
 
-    async def attach(self, client, app, threads_widget):
-        create_background_task(self.run(client, app, threads_widget))
+    async def attach(self, client, threads_widget):
+        create_background_task(self.run(client, threads_widget))
 
-    async def run(self, client, app, threads_widget):
+    async def run(self, client, threads_widget):
         async with threads_widget.watch() as on_current_thread_changed:
             self.attached.set()
             while True:
@@ -241,7 +242,7 @@ class StacktraceWidget(GroupableRadioList):
                     (frame["id"], self._render_frame_to_radiolist_text(frame)) for frame in self.frames
                 ]
                 self.current_value = self.values[0][0]
-                app.invalidate()
+                get_app().invalidate()
 
     def _render_frame_to_radiolist_text(self, frame):
         def short_path(path: str):
@@ -331,9 +332,6 @@ class UI:
         )
 
         self.source_widget.source_file = open("vidb/ui.py")
-
-    def invalidate(self):
-        self._ptk.invalidate()
 
     def run(self, *args, **kwargs):
         return self._ptk.run_async(*args, **kwargs)

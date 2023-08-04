@@ -123,7 +123,7 @@ class TestStacktrace(DAPServerMixin):
                 (2, "Thread 2"),
             ],
         )
-        widget_attach_task = asyncio.create_task(widget.attach(client, app, threads_widget))
+        widget_attach_task = asyncio.create_task(widget.attach(client, threads_widget))
         await asyncio.gather(
             change_current_thread(),
             widget_attach_task,
