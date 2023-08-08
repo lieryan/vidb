@@ -198,8 +198,11 @@ class ThreadsWidget(GroupableRadioList):
     async def attach(self, client):
         thread_list = await threads(client)
         self.threads = thread_list["threads"]
-        self.values = [(t["id"], f"{t['id']} - {t['name']}") for t in self.threads]
+        self.values = [(t["id"], self._render_thread_to_radiolist_text(t)) for t in self.threads]
         self.current_value = self.values[0][0]
+
+    def _render_thread_to_radiolist_text(self, thread):
+        return f"{thread['id']} - {thread['name']}"
 
     def __pt_container__(self):
         return TitledWindow(
