@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
 from copy import deepcopy
 
+from prompt_toolkit import HTML
+from prompt_toolkit.formatted_text import to_formatted_text
 from pytest import fixture
 
 from vidb.connection import BaseDAPConnection
@@ -37,6 +39,9 @@ class DAPServerMixin:
         assert msg["seq"] == seq or msg["seq"] is None
         msg["seq"] = seq
         self.__server_connection.send_message(msg)
+
+    def assert_formatted_text(self, formatted, expected):
+        assert to_formatted_text(formatted) == to_formatted_text(HTML(expected))
 
 
 class DAPServerConnection(BaseDAPConnection):

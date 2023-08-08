@@ -1,8 +1,5 @@
 import asyncio
 
-from prompt_toolkit import HTML
-from prompt_toolkit.formatted_text import to_formatted_text
-
 from tests.stubs import DAPServerMixin
 from vidb.client import stack_trace
 from vidb.ui import StacktraceWidget, GroupableRadioList
@@ -144,6 +141,3 @@ class TestStacktrace(DAPServerMixin):
             widget.values[1][1],
             '<frame-name>&lt;module&gt;</frame-name> <frame-filepath>testscript.py:29:1</frame-filepath>',
         )
-
-    def assert_formatted_text(self, formatted0, expected):
-        assert to_formatted_text(formatted0) == to_formatted_text(HTML(expected))
