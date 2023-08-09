@@ -196,6 +196,10 @@ class ThreadsWidget(GroupableRadioList):
         self.threads = []
 
     async def attach(self, client):
+        await self.update_threads(client)
+        self.attached.set()
+
+    async def update_threads(self, client):
         thread_list = await threads(client)
         self.threads = thread_list["threads"]
         self.values = [(t["id"], self._render_thread_to_radiolist_text(t)) for t in self.threads]
