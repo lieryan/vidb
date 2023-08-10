@@ -91,7 +91,6 @@ class TestStacktrace(DAPServerMixin):
                 }
 
         async def change_current_thread():
-            await widget.attached.wait()
             threads_widget.current_value = 2
             async with self.assert_request_response(
                 "stackTrace",

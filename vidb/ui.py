@@ -163,7 +163,6 @@ class GroupableRadioList:
         self.radio = RadioListWithWatchableCurrentValue(values=values, *args, **kwargs)
         self.radio.window.dont_extend_height = Never()
         self.group = None
-        self.attached = asyncio.Event()
 
         kb = self.radio.control.key_bindings
 
@@ -197,7 +196,6 @@ class ThreadsWidget(GroupableRadioList):
 
     async def attach(self, client):
         await self.update_threads(client)
-        self.attached.set()
 
     async def update_threads(self, client):
         thread_list = await threads(client)
@@ -239,7 +237,6 @@ class StacktraceWidget(GroupableRadioList):
 
     async def run(self, client, threads_widget):
         async with threads_widget.watch() as on_current_thread_changed:
-            self.attached.set()
             while True:
                 thread_id = await on_current_thread_changed()
 
