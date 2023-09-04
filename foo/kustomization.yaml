@@ -1,0 +1,5 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- git@github.com:firmusgrid/smc-console.git/deploy/k8s/prod/?ref=2d27941c84d2aba7f828a3738b32baa3a361075f

@@ -18,14 +18,20 @@ async def main():
 
     use_asyncio_event_loop()
     await app.run()
+    for msg in client.connection.dispatcher._messages:
+        print(msg)
 
 
 async def initial_load(client, app):
     await client.initialize()
 
     await app.threads_widget.attach(client)
+
+    await app.variables_widget.attach(client, app.stacktrace_widget)
     await app.stacktrace_widget.attach(client, app.threads_widget)
-    app._ptk.invalidate()
+    await app.source_widget.attach(client, app.stacktrace_widget)
+
+    app.threads_widget.current_value = app.threads_widget.current_value
 
 
 asyncio.run(main())

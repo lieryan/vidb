@@ -1,25 +1,19 @@
 import asyncio
 import json
-from itertools import count
+from collections import deque
 from typing import cast
 
-from vidb.dap import (
-    Capabilities,
-    Event,
-    InitializeRequest,
-    InitializeResponse,
-    ProtocolMessage,
-    Request,
-    Response,
-)
+from vidb.dap import Event, ProtocolMessage, Request, Response
 
 
 class Dispatcher:
     def __init__(self):
         self.futures = {}
         self.events = {}
+        self._messages = deque(maxlen=100)
 
     def handle_request(self, message: Request) -> asyncio.Future:
+        self._messages.append(message)
         assert message["seq"] not in self.futures
 
         future_response: asyncio.Future = asyncio.Future()
@@ -27,6 +21,7 @@ class Dispatcher:
         return future_response
 
     def handle_response(self, message: Response):
+        self._messages.append(message)
         assert message["request_seq"] in self.futures
 
         future_response = self.futures.pop(message["request_seq"])
@@ -35,6 +30,7 @@ class Dispatcher:
         return future_response
 
     def handle_event(self, message: Event):
+        self._messages.append(message)
         listeners = self.events.get(message["event"], {})
         for listener in listeners:
             listener(message)

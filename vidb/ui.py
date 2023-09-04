@@ -1,6 +1,8 @@
 from __future__ import annotations
+from uuid import uuid4
 
 import asyncio
+import io
 from pathlib import Path
 from asyncio.locks import Condition
 from typing import Optional
@@ -87,6 +89,63 @@ class SourceWidget(Window):
             cursorline=True,
         )
 
+    async def attach(self, client, stacktrace_widget):
+        create_background_task(self.run(client, stacktrace_widget))
+
+    async def run(self, client, stacktrace_widget):
+        async with stacktrace_widget.watch() as on_current_stackframe_changed:
+            while True:
+                frame_id = await on_current_stackframe_changed()
+
+                frame = next(frame for frame in stacktrace_widget.frames if frame["id"] == frame_id)
+                if frame["source"]["sourceReference"] == 0:
+                    self.source_file = open(frame["source"]["path"])
+                else:
+                    arguments = {"source": frame["source"], "sourceReference": frame["source"]["sourceReference"]}
+                    src = await client.remote_call(dict, "source", arguments=arguments)
+
+                    self.source_file = io.StringIO(src["content"])
+                self.content.buffer.cursor_position = self.content.buffer.document.translate_row_col_to_index(
+                    frame["line"] - 1,
+                    frame["column"] - 1,
+                )
+
+                self._center_cursor(
+                    self.content.buffer,
+                )
+
+                get_app().invalidate()
+
+    def _center_cursor(self, buffer):
+        """
+        Center Window vertically around cursor.
+
+        """
+        # adapted from prompt_toolkit/key_binding/bindings/vi.py
+
+        w = self
+        b = buffer
+
+        if w and w.render_info:
+            info = w.render_info
+
+            # Calculate the offset that we need in order to position the row
+            # containing the cursor in the center.
+            scroll_height = info.window_height // 2
+
+            y = max(0, b.document.cursor_position_row - 1)
+            height = 0
+            while y > 0:
+                line_height = info.get_height_for_line(y)
+
+                if height + line_height < scroll_height:
+                    height += line_height
+                    y -= 1
+                else:
+                    break
+
+            w.vertical_scroll = y
+
     @property
     def source_file(self):
         return self.content.buffer
@@ -137,11 +196,11 @@ class RadioListWithWatchableCurrentValue(RadioList):
 
     @current_value.setter
     def current_value(self, new_value):
-        async def notify():
+        async def update():
             async with self._watch_current_value:
+                self._current_value = new_value
                 self._watch_current_value.notify_all()
-        self._current_value = new_value
-        create_background_task(notify())
+        create_background_task(update())
 
     @asynccontextmanager
     async def watch(self):
@@ -196,6 +255,9 @@ class ThreadsWidget(GroupableRadioList):
 
     async def attach(self, client):
         await self.update_threads(client)
+        for thread in self.threads:
+            await client.remote_call(dict, "pause", arguments={"threadId": thread["id"]})
+        # create_background_task(self.run(client))
 
     async def update_threads(self, client):
         thread_list = await threads(client)
@@ -216,9 +278,49 @@ class ThreadsWidget(GroupableRadioList):
 class VariablesWidget(GroupableRadioList):
     def __init__(self):
         super().__init__(
-            values=[(None, "No variables"), *[(x, f"Var {x}") for x in range(10)]],
+            values=[(None, "No variables")],
         )
         self.key_bindings = self.radio.control.key_bindings
+
+    async def attach(self, client, stacktrace_widget):
+        create_background_task(self.run(client, stacktrace_widget))
+
+    async def run(self, client, stacktrace_widget):
+        from vidb.client import scopes, variables
+        async with stacktrace_widget.watch() as on_current_stackframe_changed:
+            while True:
+                frame_id = await on_current_stackframe_changed()
+
+                scope_list = await scopes(client, frame_id=frame_id)
+                values = []
+                for scope in scope_list["scopes"]:
+                    values.append((("scope", scope["name"]), scope["name"]))
+                    if True:
+                    # if scope.get("presentationHint") in ["locals", "globals"]:
+                        variable_list = await variables(client, variables_reference=scope["variablesReference"])
+                        for variable in variable_list["variables"]:
+                            var_uuid = uuid4()
+                            values.append((
+                                variable["variablesReference"] or var_uuid,
+                                HTML("{expand_marker} <variables-name>{name}</variables-name>: <variables-type>{type}</variables-type> = <variables-value>{value}</variables-value>").format(
+                                    **variable,
+                                    expand_marker="+" if variable["variablesReference"] else "-",
+                                ),
+                            ))
+                            misc = variable.copy()
+                            if misc["evaluateName"] == misc["name"]: del misc["evaluateName"]
+                            del misc["name"]
+                            del misc["type"]
+                            del misc["value"]
+                            del misc["variablesReference"]
+                            if misc.get("presentationHint") == {"attributes": ["rawString"]}:
+                                del misc["presentationHint"]
+                            for k, v in misc.items():
+                                k = str(k)[:5]
+                                values.append((variable["variablesReference"] or var_uuid, f"-- {k}={v}"))
+                self.values = values
+                self.current_value = self.values[0][0]
+                get_app().invalidate()
 
     def __pt_container__(self):
         return TitledWindow(
@@ -331,7 +433,13 @@ class UI:
             mouse_support=True,
             editing_mode=EditingMode.VI,
             style=Style.from_dict(
-                {"frame-name": "fg:lightblue", "frame-filepath": "fg:red"},
+                {
+                    "frame-name": "fg:lightblue",
+                    "frame-filepath": "fg:red",
+                    "variables-name": "fg:green",
+                    "variables-type": "fg:lightblue",
+                    "variables-value": "fg:red",
+                },
             ),
         )
 

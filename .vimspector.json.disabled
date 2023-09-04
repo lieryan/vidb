@@ -1,0 +1,14 @@
+{
+    "configurations": {
+        "Attach Port": {
+            "adapter": "multi-session",
+            "filetypes": [ "python" ],
+            "configuration": {
+                "request": "attach",
+                "pathMappings": [
+
+                ]
+            }
+        }
+    }
+}

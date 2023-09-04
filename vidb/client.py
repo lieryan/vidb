@@ -36,7 +36,7 @@ async def initialize(client: DAPClient):
         linesStartAt1=True,
         columnsStartAt1=True,
         pathFormat="path",
-        supportsVariableType=True,
+        # supportsVariableType=True,
     )
 
     response: InitializeResponse = await client.remote_call(
@@ -53,7 +53,22 @@ async def initialize(client: DAPClient):
 
 
 def attach(client: DAPClient):
-    arguments: AttachRequestArguments = dict(arguments={})
+    arguments: AttachRequestArguments = dict(
+        justMyCode=False,
+        pathMappings=[
+            # {
+            #     "localRoot": "/home/lieryan/.virtualenvs/smc-console-api-d8bry_A7-py3.10/lib/python3.10/site-packages/",
+            #     "remoteRoot": "/opt/app/venv/lib/python3.10/site-packages"
+            # },
+            {
+                "localRoot": "/home/lieryan/Projects/SP-258/",
+                "remoteRoot": "/opt/app/app/"
+            },
+        ],
+        request="attach",
+        # stopOnEntry=True, # launch only
+        # "name": "test",
+    )
     return client.remote_call(
         AttachRequest,
         "attach",
@@ -68,6 +83,20 @@ def configuration_done(client: DAPClient):
         "configurationDone",
         arguments,
     )
+
+
+# def set_breakpoints(client: DAPClient, path, breakpoints):
+#     arguments = dict(
+#         source=dict(
+#             path=path,
+#         ),
+#         breakpoints=[{"line": bp} for bp in breakpoints],
+#     )
+#     return client.remote_call(
+#         dict,
+#         "setBreakpoints",
+#         arguments,
+#     )
 
 
 def threads(client: DAPClient):
@@ -85,6 +114,28 @@ def stack_trace(client: DAPClient, *, thread_id: int):
     return client.remote_call(
         StackTraceRequest,
         "stackTrace",
+        arguments=arguments,
+    )
+
+
+def scopes(client: DAPClient, *, frame_id):
+    arguments: ... = dict(
+        frameId=frame_id,
+    )
+    return client.remote_call(
+        dict,
+        "scopes",
+        arguments=arguments,
+    )
+
+
+def variables(client: DAPClient, *, variables_reference):
+    arguments: ... = dict(
+        variablesReference=variables_reference,
+    )
+    return client.remote_call(
+        dict,
+        "variables",
         arguments=arguments,
     )
 
@@ -126,9 +177,10 @@ class DAPClient:
         initialized_event = self.wait_for_event("initialized")
 
         await initialize(self)
+        # thread_stopped_event = self.wait_for_event("thread")
         attach_response = attach(self)
         await initialized_event
-        # await set_breakpoints(self, path="myscript.py", breakpoints=[2,9])
+        # resp = await set_breakpoints(self, path="myscript.py", breakpoints=[2,9])
         if self.server_support.configuration_done_request:
             await configuration_done(self)
         await attach_response
